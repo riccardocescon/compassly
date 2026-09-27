@@ -240,8 +240,8 @@ return $default(_that.id,_that.offer,_that.answer);case _:
 /// @nodoc
 @JsonSerializable()
 
-class _SessionDocumentModel implements SessionDocumentModel {
-  const _SessionDocumentModel({@JsonKey(includeToJson: false) required this.id, this.offer, this.answer});
+class _SessionDocumentModel extends SessionDocumentModel {
+  const _SessionDocumentModel({@JsonKey(includeToJson: false) required this.id, this.offer, this.answer}): super._();
   factory _SessionDocumentModel.fromJson(Map<String, dynamic> json) => _$SessionDocumentModelFromJson(json);
 
 @override@JsonKey(includeToJson: false) final  String id;

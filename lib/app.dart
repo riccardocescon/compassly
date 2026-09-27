@@ -10,6 +10,7 @@ import 'package:compassly/core/presentation/bloc/room_bloc/room_bloc.dart';
 import 'package:compassly/core/presentation/usecase/create_room.dart';
 import 'package:compassly/core/presentation/usecase/join_room.dart';
 import 'package:compassly/core/presentation/usecase/leave_room.dart';
+import 'package:compassly/core/presentation/usecase/watch_members.dart';
 import 'package:compassly/router/app_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +43,10 @@ class App extends StatelessWidget {
               authBloc: context.read(),
               createRoom: CreateRoomUsecase(roomRepository: roomRepository),
               joinRoom: JoinRoomUsecase(
+                roomRepository: roomRepository,
+                sessionRepository: sessionRepository,
+              ),
+              watchMembers: WatchMembersUsecase(
                 roomRepository: roomRepository,
                 sessionRepository: sessionRepository,
               ),

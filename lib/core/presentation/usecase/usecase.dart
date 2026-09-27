@@ -6,3 +6,9 @@ abstract class Usecase<P, T> {
 
   Future<Either<Failure, T>> call(P params);
 }
+
+abstract class StreamUsecase<P, T> {
+  const StreamUsecase();
+
+  Stream<Either<Failure, T>> call(P params);
+}

@@ -38,6 +38,8 @@ class LeaveRoomUsecase extends Usecase<LeaveRoomUsecaseParams, void> {
         uidB: member.uid,
       );
 
+      _sessionRepository.clearAllCandidates(sessionId: sessionCode);
+
       _sessionRepository.delete(code: sessionCode).then((res) {
         res.fold((l) {
           log(l.message);

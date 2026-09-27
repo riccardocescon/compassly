@@ -56,13 +56,14 @@ extension RoomEventPatterns on RoomEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Create value)?  create,TResult Function( _Join value)?  join,TResult Function( _Leave value)?  leave,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Create value)?  create,TResult Function( _Join value)?  join,TResult Function( _Leave value)?  leave,TResult Function( _MembersWatchFailed value)?  membersWatchFailed,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _Create() when create != null:
 return create(_that);case _Join() when join != null:
 return join(_that);case _Leave() when leave != null:
-return leave(_that);case _:
+return leave(_that);case _MembersWatchFailed() when membersWatchFailed != null:
+return membersWatchFailed(_that);case _:
   return orElse();
 
 }
@@ -80,13 +81,14 @@ return leave(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Create value)  create,required TResult Function( _Join value)  join,required TResult Function( _Leave value)  leave,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Create value)  create,required TResult Function( _Join value)  join,required TResult Function( _Leave value)  leave,required TResult Function( _MembersWatchFailed value)  membersWatchFailed,}){
 final _that = this;
 switch (_that) {
 case _Create():
 return create(_that);case _Join():
 return join(_that);case _Leave():
-return leave(_that);}
+return leave(_that);case _MembersWatchFailed():
+return membersWatchFailed(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -100,13 +102,14 @@ return leave(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Create value)?  create,TResult? Function( _Join value)?  join,TResult? Function( _Leave value)?  leave,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Create value)?  create,TResult? Function( _Join value)?  join,TResult? Function( _Leave value)?  leave,TResult? Function( _MembersWatchFailed value)?  membersWatchFailed,}){
 final _that = this;
 switch (_that) {
 case _Create() when create != null:
 return create(_that);case _Join() when join != null:
 return join(_that);case _Leave() when leave != null:
-return leave(_that);case _:
+return leave(_that);case _MembersWatchFailed() when membersWatchFailed != null:
+return membersWatchFailed(_that);case _:
   return null;
 
 }
@@ -123,12 +126,13 @@ return leave(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  create,TResult Function( String code)?  join,TResult Function()?  leave,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  create,TResult Function( String code)?  join,TResult Function()?  leave,TResult Function( Failure failure)?  membersWatchFailed,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Create() when create != null:
 return create();case _Join() when join != null:
 return join(_that.code);case _Leave() when leave != null:
-return leave();case _:
+return leave();case _MembersWatchFailed() when membersWatchFailed != null:
+return membersWatchFailed(_that.failure);case _:
   return orElse();
 
 }
@@ -146,12 +150,13 @@ return leave();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  create,required TResult Function( String code)  join,required TResult Function()  leave,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  create,required TResult Function( String code)  join,required TResult Function()  leave,required TResult Function( Failure failure)  membersWatchFailed,}) {final _that = this;
 switch (_that) {
 case _Create():
 return create();case _Join():
 return join(_that.code);case _Leave():
-return leave();}
+return leave();case _MembersWatchFailed():
+return membersWatchFailed(_that.failure);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -165,12 +170,13 @@ return leave();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  create,TResult? Function( String code)?  join,TResult? Function()?  leave,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  create,TResult? Function( String code)?  join,TResult? Function()?  leave,TResult? Function( Failure failure)?  membersWatchFailed,}) {final _that = this;
 switch (_that) {
 case _Create() when create != null:
 return create();case _Join() when join != null:
 return join(_that.code);case _Leave() when leave != null:
-return leave();case _:
+return leave();case _MembersWatchFailed() when membersWatchFailed != null:
+return membersWatchFailed(_that.failure);case _:
   return null;
 
 }
@@ -309,6 +315,74 @@ String toString() {
 
 
 
+
+/// @nodoc
+
+
+class _MembersWatchFailed implements RoomEvent {
+  const _MembersWatchFailed(this.failure);
+  
+
+ final  Failure failure;
+
+/// Create a copy of RoomEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$MembersWatchFailedCopyWith<_MembersWatchFailed> get copyWith => __$MembersWatchFailedCopyWithImpl<_MembersWatchFailed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MembersWatchFailed&&(identical(other.failure, failure) || other.failure == failure));
+}
+
+
+@override
+int get hashCode {
+    return Object.hash(runtimeType,failure);
+}
+
+@override
+String toString() {
+    return 'RoomEvent.membersWatchFailed(failure: $failure)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$MembersWatchFailedCopyWith<$Res> implements $RoomEventCopyWith<$Res> {
+  factory _$MembersWatchFailedCopyWith(_MembersWatchFailed value, $Res Function(_MembersWatchFailed) _then) = __$MembersWatchFailedCopyWithImpl;
+@useResult
+$Res call({
+ Failure failure
+});
+
+
+
+
+}
+/// @nodoc
+class __$MembersWatchFailedCopyWithImpl<$Res>
+    implements _$MembersWatchFailedCopyWith<$Res> {
+  __$MembersWatchFailedCopyWithImpl(this._self, this._then);
+
+  final _MembersWatchFailed _self;
+  final $Res Function(_MembersWatchFailed) _then;
+
+/// Create a copy of RoomEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? failure = null,}) {
+  return _then(_MembersWatchFailed(
+null == failure ? _self.failure : failure // ignore: cast_nullable_to_non_nullable
+as Failure,
+  ));
+}
+
+
+}
 
 /// @nodoc
 mixin _$RoomState {

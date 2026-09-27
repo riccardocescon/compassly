@@ -32,6 +32,20 @@ class RoomRepositoryImpl extends RoomRepository {
   }
 
   @override
+  Stream<Either<FirestoreFailure, List<Member>>> watchMembers({
+    required String code,
+  }) async* {
+    final stream = _roomApi.watchMembers(code: code);
+
+    await for (final message in stream) {
+      yield message.fold(
+        (l) => Left(l),
+        (r) => Right(r.map((m) => m.toEntity()).toList()),
+      );
+    }
+  }
+
+  @override
   Future<Either<Failure, List<Member>>> fetchMembers({
     required String code,
   }) async {

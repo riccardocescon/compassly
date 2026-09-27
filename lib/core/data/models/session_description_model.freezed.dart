@@ -215,8 +215,8 @@ return $default(_that.sdp,_that.type);case _:
 /// @nodoc
 @JsonSerializable()
 
-class _SessionDescriptionModel implements SessionDescriptionModel {
-  const _SessionDescriptionModel({required this.sdp, required this.type});
+class _SessionDescriptionModel extends SessionDescriptionModel {
+  const _SessionDescriptionModel({required this.sdp, required this.type}): super._();
   factory _SessionDescriptionModel.fromJson(Map<String, dynamic> json) => _$SessionDescriptionModelFromJson(json);
 
 @override final  String sdp;

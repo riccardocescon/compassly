@@ -56,12 +56,13 @@ extension TestPageEventPatterns on TestPageEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Setup value)?  setup,TResult Function( _CreateRoom value)?  createRoom,TResult Function( _LeaveRoom value)?  leaveRoom,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Setup value)?  setup,TResult Function( _CreateRoom value)?  createRoom,TResult Function( _JoinRoom value)?  joinRoom,TResult Function( _LeaveRoom value)?  leaveRoom,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _Setup() when setup != null:
 return setup(_that);case _CreateRoom() when createRoom != null:
-return createRoom(_that);case _LeaveRoom() when leaveRoom != null:
+return createRoom(_that);case _JoinRoom() when joinRoom != null:
+return joinRoom(_that);case _LeaveRoom() when leaveRoom != null:
 return leaveRoom(_that);case _:
   return orElse();
 
@@ -80,12 +81,13 @@ return leaveRoom(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Setup value)  setup,required TResult Function( _CreateRoom value)  createRoom,required TResult Function( _LeaveRoom value)  leaveRoom,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Setup value)  setup,required TResult Function( _CreateRoom value)  createRoom,required TResult Function( _JoinRoom value)  joinRoom,required TResult Function( _LeaveRoom value)  leaveRoom,}){
 final _that = this;
 switch (_that) {
 case _Setup():
 return setup(_that);case _CreateRoom():
-return createRoom(_that);case _LeaveRoom():
+return createRoom(_that);case _JoinRoom():
+return joinRoom(_that);case _LeaveRoom():
 return leaveRoom(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -100,12 +102,13 @@ return leaveRoom(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Setup value)?  setup,TResult? Function( _CreateRoom value)?  createRoom,TResult? Function( _LeaveRoom value)?  leaveRoom,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Setup value)?  setup,TResult? Function( _CreateRoom value)?  createRoom,TResult? Function( _JoinRoom value)?  joinRoom,TResult? Function( _LeaveRoom value)?  leaveRoom,}){
 final _that = this;
 switch (_that) {
 case _Setup() when setup != null:
 return setup(_that);case _CreateRoom() when createRoom != null:
-return createRoom(_that);case _LeaveRoom() when leaveRoom != null:
+return createRoom(_that);case _JoinRoom() when joinRoom != null:
+return joinRoom(_that);case _LeaveRoom() when leaveRoom != null:
 return leaveRoom(_that);case _:
   return null;
 
@@ -123,11 +126,12 @@ return leaveRoom(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  setup,TResult Function()?  createRoom,TResult Function()?  leaveRoom,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  setup,TResult Function()?  createRoom,TResult Function( String code)?  joinRoom,TResult Function()?  leaveRoom,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Setup() when setup != null:
 return setup();case _CreateRoom() when createRoom != null:
-return createRoom();case _LeaveRoom() when leaveRoom != null:
+return createRoom();case _JoinRoom() when joinRoom != null:
+return joinRoom(_that.code);case _LeaveRoom() when leaveRoom != null:
 return leaveRoom();case _:
   return orElse();
 
@@ -146,11 +150,12 @@ return leaveRoom();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  setup,required TResult Function()  createRoom,required TResult Function()  leaveRoom,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  setup,required TResult Function()  createRoom,required TResult Function( String code)  joinRoom,required TResult Function()  leaveRoom,}) {final _that = this;
 switch (_that) {
 case _Setup():
 return setup();case _CreateRoom():
-return createRoom();case _LeaveRoom():
+return createRoom();case _JoinRoom():
+return joinRoom(_that.code);case _LeaveRoom():
 return leaveRoom();}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -165,11 +170,12 @@ return leaveRoom();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  setup,TResult? Function()?  createRoom,TResult? Function()?  leaveRoom,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  setup,TResult? Function()?  createRoom,TResult? Function( String code)?  joinRoom,TResult? Function()?  leaveRoom,}) {final _that = this;
 switch (_that) {
 case _Setup() when setup != null:
 return setup();case _CreateRoom() when createRoom != null:
-return createRoom();case _LeaveRoom() when leaveRoom != null:
+return createRoom();case _JoinRoom() when joinRoom != null:
+return joinRoom(_that.code);case _LeaveRoom() when leaveRoom != null:
 return leaveRoom();case _:
   return null;
 
@@ -241,6 +247,74 @@ String toString() {
 
 
 
+
+/// @nodoc
+
+
+class _JoinRoom implements TestPageEvent {
+  const _JoinRoom(this.code);
+  
+
+ final  String code;
+
+/// Create a copy of TestPageEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$JoinRoomCopyWith<_JoinRoom> get copyWith => __$JoinRoomCopyWithImpl<_JoinRoom>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _JoinRoom&&(identical(other.code, code) || other.code == code));
+}
+
+
+@override
+int get hashCode {
+    return Object.hash(runtimeType,code);
+}
+
+@override
+String toString() {
+    return 'TestPageEvent.joinRoom(code: $code)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$JoinRoomCopyWith<$Res> implements $TestPageEventCopyWith<$Res> {
+  factory _$JoinRoomCopyWith(_JoinRoom value, $Res Function(_JoinRoom) _then) = __$JoinRoomCopyWithImpl;
+@useResult
+$Res call({
+ String code
+});
+
+
+
+
+}
+/// @nodoc
+class __$JoinRoomCopyWithImpl<$Res>
+    implements _$JoinRoomCopyWith<$Res> {
+  __$JoinRoomCopyWithImpl(this._self, this._then);
+
+  final _JoinRoom _self;
+  final $Res Function(_JoinRoom) _then;
+
+/// Create a copy of TestPageEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? code = null,}) {
+  return _then(_JoinRoom(
+null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
 
 /// @nodoc
 

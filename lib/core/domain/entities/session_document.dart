@@ -3,8 +3,8 @@ import 'package:compassly/core/domain/entities/session_description.dart';
 
 class SessionDocument {
   final String id;
-  final SessionDescription offer;
-  final SessionDescription answer;
+  final SessionDescription? offer;
+  final SessionDescription? answer;
   final List<ICECandidateDocument> offerCandidates;
   final List<ICECandidateDocument> answerCandidates;
 

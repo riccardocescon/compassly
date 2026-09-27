@@ -6,6 +6,8 @@ part 'ice_candidate_document_model.g.dart';
 
 @freezed
 abstract class ICECandidateDocumentModel with _$ICECandidateDocumentModel {
+  const ICECandidateDocumentModel._();
+
   const factory ICECandidateDocumentModel({
     @JsonKey(includeToJson: false) required String id,
     required String sdpMid,
@@ -23,5 +25,12 @@ abstract class ICECandidateDocumentModel with _$ICECandidateDocumentModel {
     sdpMid: entity.sdpMid,
     sdpMLineIndex: entity.sdpMLineIndex,
     candidate: entity.candidate,
+  );
+
+  ICECandidateDocument toEntity() => ICECandidateDocument(
+    id: id,
+    sdpMid: sdpMid,
+    sdpMLineIndex: sdpMLineIndex,
+    candidate: candidate,
   );
 }

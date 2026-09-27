@@ -10,6 +10,9 @@ abstract class RoomRepository {
     required String uid,
     required Member member,
   });
+  Stream<Either<FirestoreFailure, List<Member>>> watchMembers({
+    required String code,
+  });
   Future<Either<Failure, List<Member>>> fetchMembers({required String code});
   Future<Either<Failure, Room>> join({
     required String code,

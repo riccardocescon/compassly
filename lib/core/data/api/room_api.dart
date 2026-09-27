@@ -9,8 +9,9 @@ class RoomApi {
 
   const RoomApi({required this._firebase});
 
-  CollectionReference<RoomModel> get _rooms =>
-      _firebase.collection('rooms').withConverter<RoomModel>(
+  CollectionReference<RoomModel> get _rooms => _firebase
+      .collection('rooms')
+      .withConverter<RoomModel>(
         fromFirestore: (snapshot, _) =>
             RoomModel.fromJson({...?snapshot.data(), 'code': snapshot.id}),
         toFirestore: (model, _) => model.toJson(),
@@ -53,6 +54,25 @@ class RoomApi {
       return Right(room.data()!);
     } catch (e) {
       return Left(FirestoreFailure.firebaseError(e.toString()));
+    }
+  }
+
+  Stream<Either<FirestoreFailure, List<MemberModel>>> watchMembers({
+    required String code,
+  }) async* {
+    try {
+      final snapshot = _members(code).snapshots();
+
+      yield* snapshot.map((snapshot) {
+        final addedDocs = snapshot.docChanges
+            .where((change) => change.type == DocumentChangeType.added)
+            .map((change) => change.doc.data()!)
+            .toList();
+
+        return Right(addedDocs);
+      });
+    } catch (e) {
+      yield Left(FirestoreFailure.firebaseError(e.toString()));
     }
   }
 

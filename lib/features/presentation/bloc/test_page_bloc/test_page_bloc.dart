@@ -55,6 +55,25 @@ class TestPageBloc extends Bloc<TestPageEvent, TestPageState> {
       );
     });
 
+    on<_JoinRoom>((event, emit) async {
+      emit(const TestPageState.loading());
+
+      _roomBloc.add(RoomEvent.join(event.code));
+      final roomState = await _roomBloc.stream.firstWhere(
+        (s) => s.maybeMap(
+          data: (_) => true,
+          error: (_) => true,
+          orElse: () => false,
+        ),
+      );
+
+      roomState.maybeMap(
+        data: (v) => emit(TestPageState.ui(uid: _user!.uid, room: v.room)),
+        error: (v) => emit(TestPageState.error(message: v.failure.message)),
+        orElse: () {},
+      );
+    });
+
     on<_LeaveRoom>((event, emit) async {
       emit(const TestPageState.loading());
 

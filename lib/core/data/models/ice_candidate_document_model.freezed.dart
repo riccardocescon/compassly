@@ -217,8 +217,8 @@ return $default(_that.id,_that.sdpMid,_that.sdpMLineIndex,_that.candidate);case 
 /// @nodoc
 @JsonSerializable()
 
-class _ICECandidateDocumentModel implements ICECandidateDocumentModel {
-  const _ICECandidateDocumentModel({@JsonKey(includeToJson: false) required this.id, required this.sdpMid, required this.sdpMLineIndex, required this.candidate});
+class _ICECandidateDocumentModel extends ICECandidateDocumentModel {
+  const _ICECandidateDocumentModel({@JsonKey(includeToJson: false) required this.id, required this.sdpMid, required this.sdpMLineIndex, required this.candidate}): super._();
   factory _ICECandidateDocumentModel.fromJson(Map<String, dynamic> json) => _$ICECandidateDocumentModelFromJson(json);
 
 @override@JsonKey(includeToJson: false) final  String id;

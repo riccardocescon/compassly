@@ -10,6 +10,20 @@ class TestPage extends StatefulWidget {
 }
 
 class _TestPageState extends State<TestPage> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,6 +45,21 @@ class _TestPageState extends State<TestPage> {
                         TestPageEvent.createRoom(),
                       ),
                       child: Text('Create Room'),
+                    ),
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: 300,
+                          height: 100,
+                          child: TextFormField(controller: _controller),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => context.read<TestPageBloc>().add(
+                            TestPageEvent.joinRoom(_controller.text),
+                          ),
+                          child: Text('Join'),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(

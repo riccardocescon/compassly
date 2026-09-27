@@ -27,11 +27,11 @@ Ordine deciso: alpha con solo STUN (connessione diretta), TURN come ultimo step 
 - [ ] Scrittura offerta SDP da parte di chi si unisce, verso ciascun membro esistente
 - [ ] Scrittura risposta SDP da parte di ciascun membro esistente
 - [ ] Listener su `docChanges` (tipo `added`) per candidati in arrivo su entrambe le sottocollezioni, per ciascuna sessione pairwise attiva
-- [ ] `RoomRepository` (create/search/join/leave) + orchestratore (`JoinRoomUseCase`/`LeaveRoomUseCase`) che usa `RoomRepository` e il `SessionRepository` esistente per aprire/chiudere le sessioni pairwise
+- [X] `RoomRepository` (create/search/join/leave) + orchestratore (`JoinRoomUseCase`/`LeaveRoomUseCase`) che usa `RoomRepository` e il `SessionRepository` esistente per aprire/chiudere le sessioni pairwise
 - [ ] Security rules Firestore:
   - [ ] Un utente può leggere/scrivere solo sessioni e membership di room a cui appartiene
   - [ ] Ricerca per room code limitata ai soli campi pubblici necessari
-- [ ] Pulizia: eliminazione documento sessione pairwise + sottocollezioni dopo connessione riuscita per quella coppia (`iceConnectionState == connected`) — il documento room non viene toccato da questa pulizia
+- [X] Pulizia: eliminazione documento sessione pairwise + sottocollezioni dopo connessione riuscita per quella coppia (`iceConnectionState == connected`) — il documento room non viene toccato da questa pulizia
 - [ ] Test manuale: 2-5 client (anche emulatori) completano join, offer/answer/candidati per ogni coppia e leave, verificando solo i dati su Firestore (senza WebRTC vero)
 
 ## Fase 2 — WebRTC P2P (solo STUN) — ALPHA
