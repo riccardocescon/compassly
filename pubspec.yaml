@@ -38,6 +38,12 @@ dependencies:
   bloc: ^9.2.1
   flutter_bloc: ^9.1.1
   flutter_webrtc: ^1.6.2+hotfix.3
+  firebase_auth: ^6.7.0
+  cloud_firestore: ^6.10.0
+  flutter_compass: ^0.8.1
+  geolocator: ^14.1.0
+  freezed: ^4.0.2
+  ribs_core: ^1.0.0
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +55,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  build_runner: ^2.16.1
+  freezed_annotation: ^3.1.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

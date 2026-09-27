@@ -8,11 +8,11 @@ Ordine deciso: alpha con solo STUN (connessione diretta), TURN come ultimo step 
 
 ## Fase 0 — Setup base
 
-- [ ] Aggiungere dipendenze in `pubspec.yaml`: `firebase_auth`, `cloud_firestore`, `flutter_webrtc`, `flutter_compass`, `geolocator`
-- [ ] Configurare Firebase Auth anonimo (login automatico all'avvio app)
-- [ ] Verificare che `firebase_options.dart` sia allineato al progetto Firebase corretto
-- [ ] Aggiungere permessi piattaforma per posizione (Android `ACCESS_FINE_LOCATION`, iOS `NSLocationWhenInUseUsageDescription`)
-- [ ] Aggiungere permessi piattaforma per microfono/camera se richiesti da `flutter_webrtc` (anche se non usati, il plugin può richiederli su alcune piattaforme)
+- [X] Aggiungere dipendenze in `pubspec.yaml`: `firebase_auth`, `cloud_firestore`, `flutter_webrtc`, `flutter_compass`, `geolocator`
+- [X] Configurare Firebase Auth anonimo (login automatico all'avvio app)
+- [X] Verificare che `firebase_options.dart` sia allineato al progetto Firebase corretto
+- [X] Aggiungere permessi piattaforma per posizione (Android `ACCESS_FINE_LOCATION`, iOS `NSLocationWhenInUseUsageDescription`)
+- [X] Aggiungere permessi piattaforma per microfono/camera se richiesti da `flutter_webrtc` (anche se non usati, il plugin può richiederli su alcune piattaforme)
 
 ## Fase 1 — Firestore: signaling
 
