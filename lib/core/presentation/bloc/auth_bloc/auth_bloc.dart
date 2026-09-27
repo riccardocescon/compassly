@@ -10,6 +10,8 @@ part 'auth_bloc.freezed.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
+  User? _user;
+  User? get user => _user;
 
   AuthBloc({required this._authRepository}) : super(const AuthState.init()) {
     on<_Setup>((event, emit) async {
@@ -17,10 +19,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       final result = await _authRepository.auth();
 
-      result.fold(
-        (l) => emit(AuthState.error(l)),
-        (r) => emit(AuthState.authenticated(r)),
-      );
+      result.fold((l) => emit(AuthState.error(l)), (r) {
+        _user = r;
+        emit(AuthState.authenticated(r));
+      });
     });
   }
 }

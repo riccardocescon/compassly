@@ -56,11 +56,13 @@ extension TestPageEventPatterns on TestPageEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Setup value)?  setup,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Setup value)?  setup,TResult Function( _CreateRoom value)?  createRoom,TResult Function( _LeaveRoom value)?  leaveRoom,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _Setup() when setup != null:
-return setup(_that);case _:
+return setup(_that);case _CreateRoom() when createRoom != null:
+return createRoom(_that);case _LeaveRoom() when leaveRoom != null:
+return leaveRoom(_that);case _:
   return orElse();
 
 }
@@ -78,11 +80,13 @@ return setup(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Setup value)  setup,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Setup value)  setup,required TResult Function( _CreateRoom value)  createRoom,required TResult Function( _LeaveRoom value)  leaveRoom,}){
 final _that = this;
 switch (_that) {
 case _Setup():
-return setup(_that);}
+return setup(_that);case _CreateRoom():
+return createRoom(_that);case _LeaveRoom():
+return leaveRoom(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -96,11 +100,13 @@ return setup(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Setup value)?  setup,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Setup value)?  setup,TResult? Function( _CreateRoom value)?  createRoom,TResult? Function( _LeaveRoom value)?  leaveRoom,}){
 final _that = this;
 switch (_that) {
 case _Setup() when setup != null:
-return setup(_that);case _:
+return setup(_that);case _CreateRoom() when createRoom != null:
+return createRoom(_that);case _LeaveRoom() when leaveRoom != null:
+return leaveRoom(_that);case _:
   return null;
 
 }
@@ -117,10 +123,12 @@ return setup(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  setup,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  setup,TResult Function()?  createRoom,TResult Function()?  leaveRoom,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Setup() when setup != null:
-return setup();case _:
+return setup();case _CreateRoom() when createRoom != null:
+return createRoom();case _LeaveRoom() when leaveRoom != null:
+return leaveRoom();case _:
   return orElse();
 
 }
@@ -138,10 +146,12 @@ return setup();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  setup,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  setup,required TResult Function()  createRoom,required TResult Function()  leaveRoom,}) {final _that = this;
 switch (_that) {
 case _Setup():
-return setup();}
+return setup();case _CreateRoom():
+return createRoom();case _LeaveRoom():
+return leaveRoom();}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -155,10 +165,12 @@ return setup();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  setup,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  setup,TResult? Function()?  createRoom,TResult? Function()?  leaveRoom,}) {final _that = this;
 switch (_that) {
 case _Setup() when setup != null:
-return setup();case _:
+return setup();case _CreateRoom() when createRoom != null:
+return createRoom();case _LeaveRoom() when leaveRoom != null:
+return leaveRoom();case _:
   return null;
 
 }
@@ -190,6 +202,70 @@ int get hashCode => runtimeType.hashCode;
 @override
 String toString() {
     return 'TestPageEvent.setup()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _CreateRoom implements TestPageEvent {
+  const _CreateRoom();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreateRoom);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+    return 'TestPageEvent.createRoom()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _LeaveRoom implements TestPageEvent {
+  const _LeaveRoom();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LeaveRoom);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+    return 'TestPageEvent.leaveRoom()';
 }
 
 
@@ -312,12 +388,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  init,TResult Function()?  loading,TResult Function( String uid)?  ui,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  init,TResult Function()?  loading,TResult Function( String uid,  Room? room)?  ui,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Init() when init != null:
 return init();case _Loading() when loading != null:
 return loading();case _Ui() when ui != null:
-return ui(_that.uid);case _Error() when error != null:
+return ui(_that.uid,_that.room);case _Error() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -336,12 +412,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  init,required TResult Function()  loading,required TResult Function( String uid)  ui,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  init,required TResult Function()  loading,required TResult Function( String uid,  Room? room)  ui,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case _Init():
 return init();case _Loading():
 return loading();case _Ui():
-return ui(_that.uid);case _Error():
+return ui(_that.uid,_that.room);case _Error():
 return error(_that.message);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -356,12 +432,12 @@ return error(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  init,TResult? Function()?  loading,TResult? Function( String uid)?  ui,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  init,TResult? Function()?  loading,TResult? Function( String uid,  Room? room)?  ui,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case _Init() when init != null:
 return init();case _Loading() when loading != null:
 return loading();case _Ui() when ui != null:
-return ui(_that.uid);case _Error() when error != null:
+return ui(_that.uid,_that.room);case _Error() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -438,10 +514,11 @@ String toString() {
 
 
 class _Ui implements TestPageState {
-  const _Ui({required this.uid});
+  const _Ui({required this.uid, this.room});
   
 
  final  String uid;
+ final  Room? room;
 
 /// Create a copy of TestPageState
 /// with the given fields replaced by the non-null parameter values.
@@ -453,18 +530,18 @@ _$UiCopyWith<_Ui> get copyWith => __$UiCopyWithImpl<_Ui>(this, _$identity);
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Ui&&(identical(other.uid, uid) || other.uid == uid));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Ui&&(identical(other.uid, uid) || other.uid == uid)&&const DeepCollectionEquality().equals(other.room, room));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,uid);
+    return Object.hash(runtimeType,uid,const DeepCollectionEquality().hash(room));
 }
 
 @override
 String toString() {
-    return 'TestPageState.ui(uid: $uid)';
+    return 'TestPageState.ui(uid: $uid, room: $room)';
 }
 
 
@@ -475,7 +552,7 @@ abstract mixin class _$UiCopyWith<$Res> implements $TestPageStateCopyWith<$Res> 
   factory _$UiCopyWith(_Ui value, $Res Function(_Ui) _then) = __$UiCopyWithImpl;
 @useResult
 $Res call({
- String uid
+ String uid, Room? room
 });
 
 
@@ -492,10 +569,11 @@ class __$UiCopyWithImpl<$Res>
 
 /// Create a copy of TestPageState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? uid = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? room = freezed,}) {
   return _then(_Ui(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
-as String,
+as String,room: freezed == room ? _self.room : room // ignore: cast_nullable_to_non_nullable
+as Room?,
   ));
 }
 

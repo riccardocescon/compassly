@@ -5,7 +5,7 @@ description: Scaffold a new Flutter BLoC (bloc + freezed event + freezed state, 
 
 # Bloc Creator
 
-Generates the 3-file BLoC trio (`*_bloc.dart`, `*_event_bloc.dart`, `*_state_bloc.dart`) used in this project, using `freezed` for the event/state unions and `flutter_bloc` for the bloc class.
+Generates the 3-file BLoC trio (`*_bloc.dart`, `*_event.dart`, `*_state.dart`) used in this project, using `freezed` for the event/state unions and `flutter_bloc` for the bloc class.
 
 ## 1. Ask for the bloc name
 
@@ -24,14 +24,15 @@ The folder is named after `<name>` **as typed**, unmodified. File names are diff
 Given `<name>` (the raw input) and `<suffix>` = whichever of `_page_bloc` / `_bloc` it ends with:
 
 - `base` = `<name>` with the trailing `<suffix>` removed — e.g. `auth_bloc` → `auth`, `home_page_bloc` → `home`
-- Files, built from `base` plus one of three fixed suffixes (never from `<name>` directly — that would repeat "bloc"/"page_bloc" twice):
-  - **page bloc**: `<base>_page_bloc.dart`, `<base>_page_event_bloc.dart`, `<base>_page_state_bloc.dart`
-  - **normal bloc**: `<base>_bloc.dart`, `<base>_event_bloc.dart`, `<base>_state_bloc.dart`
+- `eventStateBase` = `<name>` with only the trailing literal `_bloc` stripped (keep `_page` if present) — e.g. `test_page_bloc` → `test_page`, `auth_bloc` → `auth`, `home_page_bloc` → `home_page`. For a normal bloc this is identical to `base`; for a page bloc it keeps the `_page` part that `base` drops.
+- The bloc file is built from `base` (never from `<name>` directly — that would repeat "bloc"/"page_bloc" twice); the event/state files are built from `eventStateBase` (no "bloc" in the name at all, matching this repo's existing blocs):
+  - **page bloc**: `<base>_page_bloc.dart`, `<eventStateBase>_event.dart`, `<eventStateBase>_state.dart`
+  - **normal bloc**: `<base>_bloc.dart`, `<eventStateBase>_event.dart`, `<eventStateBase>_state.dart`
 
 Examples:
 
-- page bloc, `name = home_page_bloc` → base `home` → `home_page_bloc.dart`, `home_page_event_bloc.dart`, `home_page_state_bloc.dart`
-- normal bloc, `name = auth_bloc` → base `auth` → `auth_bloc.dart`, `auth_event_bloc.dart`, `auth_state_bloc.dart`
+- page bloc, `name = home_page_bloc` → base `home`, eventStateBase `home_page` → `home_page_bloc.dart`, `home_page_event.dart`, `home_page_state.dart`
+- normal bloc, `name = auth_bloc` → base `auth`, eventStateBase `auth` → `auth_bloc.dart`, `auth_event.dart`, `auth_state.dart`
 
 Target directory (uses the full `<name>`, not `base`):
 - page bloc: `lib/features/presentation/bloc/<name>/`
@@ -39,9 +40,8 @@ Target directory (uses the full `<name>`, not `base`):
 
 `ClassName` = PascalCase of `<name>` **as typed**, the full input including its suffix (split on `_`, capitalize each part, join) — e.g. `home_page_bloc` → `HomePageBloc`, `auth_bloc` → `AuthBloc`. This is the Bloc class name; file names use `base`.
 
-The event/state classes do **not** reuse `ClassName` — they must match the file name (minus the trailing literal `_bloc`, not the whole page-bloc suffix), without the word "Bloc" in them:
+The event/state classes do **not** reuse `ClassName` — they must match the file name (i.e. `eventStateBase`, defined above), without the word "Bloc" in them:
 
-- `eventStateBase` = `<name>` with only the trailing literal `_bloc` stripped (keep `_page` if present) — e.g. `test_page_bloc` → `test_page`, `auth_bloc` → `auth`, `home_page_bloc` → `home_page`.
 - `EventStateName` = PascalCase of `eventStateBase` — e.g. `test_page` → `TestPage`, `auth` → `Auth`, `home_page` → `HomePage`.
 - The event/state classes are `<EventStateName>Event` / `<EventStateName>State` — e.g. for `test_page_bloc`: `TestPageEvent` / `TestPageState`. For `auth_bloc`: `AuthEvent` / `AuthState`.
 
@@ -49,7 +49,7 @@ The event and state files are **not** separate freezed libraries — they are `p
 
 ## 3. Create the 3 files
 
-### `<...>_event_bloc.dart`
+### `<...>_event.dart`
 
 A freezed union with a single default event, `setup`, no parameters:
 
@@ -64,7 +64,7 @@ sealed class <EventStateName>Event with _$<EventStateName>Event {
 
 (`sealed` is required by freezed 3+/4+ — installed here — for any union with factory constructors; a plain `class` silently generates no code, no error.)
 
-### `<...>_state_bloc.dart`
+### `<...>_state.dart`
 
 A freezed union. States: `init`, `loading`, `ui` (page bloc only), `error`. No parameters on any of them (don't invent fields that weren't asked for).
 

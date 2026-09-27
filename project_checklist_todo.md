@@ -16,18 +16,23 @@ Ordine deciso: alpha con solo STUN (connessione diretta), TURN come ultimo step 
 
 ## Fase 1 — Firestore: signaling
 
-- [ ] Definire struttura `sessions/{sessionId}` con campi `offer` e `answer` (sdp, type)
-- [ ] Sottocollezione `callerCandidates` — un documento per candidato ICE (no array su campo unico)
-- [ ] Sottocollezione `calleeCandidates` — stessa logica
-- [ ] Logica "friend code": generazione codice, ricerca sessione tramite codice, join
-- [ ] Scrittura offerta SDP da parte del creatore sessione
-- [ ] Scrittura risposta SDP da parte di chi si unisce
-- [ ] Listener su `docChanges` (tipo `added`) per candidati in arrivo su entrambe le sottocollezioni
+- [X] Definire struttura `sessions/{sessionId}` con campi `offer` e `answer` (sdp, type)
+- [X] Sottocollezione `offerCandidates` — un documento per candidato ICE (no array su campo unico)
+- [X] Sottocollezione `answerCandidates` — stessa logica
+- [X] Room persistente: struttura `rooms/{roomCode}` + sottocollezione `members/{uid}` (no array sul documento room)
+- [X] Room code: generazione, ricerca room tramite codice, join (scrittura membro in `members`)
+- [X] Leave: rimozione proprio documento da `members`; se era l'ultimo membro, eliminazione documento `rooms/{roomCode}`
+- [ ] `sessionId` deterministico per coppia: `{roomCode}_{uidA}_{uidB}` (uid ordinati alfabeticamente) — nessuna query aggiuntiva per scoprire le sessioni
+- [ ] Convenzione offerente: chi si unisce alla room dopo crea sempre l'offerta verso ciascun membro già presente; chi è già in room resta in ascolto e risponde (answer)
+- [ ] Scrittura offerta SDP da parte di chi si unisce, verso ciascun membro esistente
+- [ ] Scrittura risposta SDP da parte di ciascun membro esistente
+- [ ] Listener su `docChanges` (tipo `added`) per candidati in arrivo su entrambe le sottocollezioni, per ciascuna sessione pairwise attiva
+- [ ] `RoomRepository` (create/search/join/leave) + orchestratore (`JoinRoomUseCase`/`LeaveRoomUseCase`) che usa `RoomRepository` e il `SessionRepository` esistente per aprire/chiudere le sessioni pairwise
 - [ ] Security rules Firestore:
-  - [ ] Un utente può leggere/scrivere solo sessioni a cui appartiene
-  - [ ] Ricerca per friend code limitata ai soli campi pubblici necessari
-- [ ] Pulizia: eliminazione documento sessione + sottocollezioni dopo connessione riuscita (`iceConnectionState == connected`)
-- [ ] Test manuale: due client (anche due emulatori) completano offer/answer/candidati senza WebRTC vero, solo verificando i dati su Firestore
+  - [ ] Un utente può leggere/scrivere solo sessioni e membership di room a cui appartiene
+  - [ ] Ricerca per room code limitata ai soli campi pubblici necessari
+- [ ] Pulizia: eliminazione documento sessione pairwise + sottocollezioni dopo connessione riuscita per quella coppia (`iceConnectionState == connected`) — il documento room non viene toccato da questa pulizia
+- [ ] Test manuale: 2-5 client (anche emulatori) completano join, offer/answer/candidati per ogni coppia e leave, verificando solo i dati su Firestore (senza WebRTC vero)
 
 ## Fase 2 — WebRTC P2P (solo STUN) — ALPHA
 
@@ -44,11 +49,11 @@ Ordine deciso: alpha con solo STUN (connessione diretta), TURN come ultimo step 
 
 ## Fase 3 — UI
 
-- [ ] Schermata inserimento/condivisione friend code
-- [ ] Schermata bussola: ago che punta verso l'amico (heading da `flutter_compass` + bearing calcolato)
-- [ ] Visualizzazione distanza dall'amico
-- [ ] Gestione stati connessione (in attesa, connessione in corso, connesso, errore/disconnesso)
-- [ ] Gestione multi-amico (se previsto) o singolo amico per la versione alpha
+- [ ] Schermata creazione/inserimento/condivisione room code
+- [ ] Schermata bussola: un ago per ciascun membro connesso (heading da `flutter_compass` + bearing calcolato verso ognuno)
+- [ ] Visualizzazione distanza da ciascun membro
+- [ ] Gestione stati connessione per membro (in attesa, connessione in corso, connesso, errore/disconnesso)
+- [ ] Gestione multi-amico: fino a 5 membri per room (mesh P2P completo, vedi architettura)
 - [ ] Rimuovere/sostituire `test_page.dart` con le schermate reali
 
 ## Fase 4 — TURN (Cloud Function) — prima del beta
@@ -65,4 +70,4 @@ Ordine deciso: alpha con solo STUN (connessione diretta), TURN come ultimo step 
 - [ ] Gestione riconnessione se `iceConnectionState` passa a `disconnected`/`failed`
 - [ ] Timeout su sessioni Firestore non completate (nessuno risponde all'offerta)
 - [ ] Monitoraggio costi Firestore/Cloud Functions/TURN a scala reale
-- [ ] Revisione security rules con casi limite (sessione scaduta, friend code riutilizzato, ecc.)
+- [ ] Revisione security rules con casi limite (sessione pairwise abbandonata a metà, join/leave concorrenti sulla stessa room, ecc.)

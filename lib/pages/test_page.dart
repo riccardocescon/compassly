@@ -23,7 +23,29 @@ class _TestPageState extends State<TestPage> {
               ui: (value) {
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [Text('Uid: ${value.uid}')],
+                  children: [
+                    Text('Uid: ${value.uid}'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.read<TestPageBloc>().add(
+                        TestPageEvent.createRoom(),
+                      ),
+                      child: Text('Create Room'),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.read<TestPageBloc>().add(
+                        TestPageEvent.leaveRoom(),
+                      ),
+                      child: Text('Leave Room'),
+                    ),
+                    const SizedBox(height: 16),
+                    if (value.room != null) ...[
+                      Text('Room: ${value.room!.code}'),
+                      const SizedBox(height: 16),
+                      Text('Members: ${value.room!.members.length}'),
+                    ],
+                  ],
                 );
               },
               error: (value) => Center(child: Text('Error: ${value.message}')),
