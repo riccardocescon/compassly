@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "934791139903",
+    "project_id": "compay-18d81",
+    "storage_bucket": "compay-18d81.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:934791139903:android:8b19c8bd530d4701109e8a",
+        "android_client_info": {
+          "package_name": "com.example.compassly"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVAZSlSq8sx_kvUeyzZcBhmwbY4LiDnVA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
