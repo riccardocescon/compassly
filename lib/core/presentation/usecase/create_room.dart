@@ -12,13 +12,15 @@ class CreateRoomUsecase extends Usecase<CreateRoomUsecaseParams, Room> {
 
   @override
   Future<Either<Failure, Room>> call(CreateRoomUsecaseParams params) async {
-    return _roomRepository.create(uid: params.uid, member: params.member);
+    return _roomRepository.create(
+      uid: params.member.uid,
+      member: params.member,
+    );
   }
 }
 
 class CreateRoomUsecaseParams {
-  final String uid;
   final Member member;
 
-  CreateRoomUsecaseParams({required this.uid, required this.member});
+  CreateRoomUsecaseParams({required this.member});
 }

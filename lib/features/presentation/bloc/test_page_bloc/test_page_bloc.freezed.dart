@@ -530,13 +530,13 @@ _$UiCopyWith<_Ui> get copyWith => __$UiCopyWithImpl<_Ui>(this, _$identity);
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Ui&&(identical(other.uid, uid) || other.uid == uid)&&const DeepCollectionEquality().equals(other.room, room));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Ui&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.room, room) || other.room == room));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,uid,const DeepCollectionEquality().hash(room));
+    return Object.hash(runtimeType,uid,room);
 }
 
 @override

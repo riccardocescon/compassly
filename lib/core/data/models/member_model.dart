@@ -6,6 +6,8 @@ part 'member_model.g.dart';
 
 @freezed
 abstract class MemberModel with _$MemberModel {
+  const MemberModel._();
+
   const factory MemberModel({
     @JsonKey(includeToJson: false) required String uid,
     required String name,
@@ -16,4 +18,6 @@ abstract class MemberModel with _$MemberModel {
 
   factory MemberModel.fromEntity(Member entity, {required String uid}) =>
       MemberModel(uid: uid, name: entity.name);
+
+  Member toEntity() => Member(name: name, uid: uid);
 }

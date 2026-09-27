@@ -16,6 +16,9 @@ class FirestoreFailure extends Failure {
 
   factory FirestoreFailure.firebaseError(String error) =>
       FirestoreFailure._(message: error);
+
+  factory FirestoreFailure.notFound(String entity) =>
+      FirestoreFailure._(message: '$entity not found');
 }
 
 class DataFailure extends Failure {

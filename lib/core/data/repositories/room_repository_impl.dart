@@ -4,16 +4,11 @@ import 'package:compassly/core/domain/entities/member.dart';
 import 'package:compassly/core/domain/entities/room.dart';
 import 'package:compassly/core/domain/repositories/room_repository.dart';
 import 'package:compassly/core/failures/failure.dart';
+import 'package:compassly/core/utils/generators.dart';
 import 'package:ribs_core/ribs_core.dart';
-import 'package:uuid/uuid.dart';
 
 class RoomRepositoryImpl extends RoomRepository {
   final RoomApi _roomApi;
-
-  String _generateCode() {
-    const uuid = Uuid();
-    return uuid.v4().substring(0, 6).toUpperCase();
-  }
 
   const RoomRepositoryImpl({required this._roomApi});
 
@@ -22,11 +17,41 @@ class RoomRepositoryImpl extends RoomRepository {
     required String uid,
     required Member member,
   }) async {
-    final code = _generateCode();
-    final name = _generateCode().toUpperCase();
-    final result = await _roomApi.create(code: code, roomName: 'Room $name');
+    final code = Generators.generateCode();
+    final name = Generators.generateName();
+    final result = await _roomApi.create(code: code, roomName: name);
 
     if (result case Left(:final a)) return Left(a);
+
+    final memberModel = MemberModel.fromEntity(member, uid: uid);
+    final result2 = await _roomApi.join(code: code, member: memberModel);
+
+    if (result2 case Left(:final a)) return Left(a);
+
+    return Right(Room(code: code, members: [member]));
+  }
+
+  @override
+  Future<Either<Failure, List<Member>>> fetchMembers({
+    required String code,
+  }) async {
+    final result = await _roomApi.fetchMembers(code: code);
+
+    if (result case Left(:final a)) return Left(a);
+
+    return result.map(
+      (models) => models.map((model) => model.toEntity()).toList(),
+    );
+  }
+
+  @override
+  Future<Either<Failure, Room>> join({
+    required String code,
+    required String uid,
+    required Member member,
+  }) async {
+    final foRoom = await _roomApi.search(code: code);
+    if (foRoom case Left(:final a)) return Left(a);
 
     final memberModel = MemberModel.fromEntity(member, uid: uid);
     final result2 = await _roomApi.join(code: code, member: memberModel);
@@ -47,8 +72,8 @@ class RoomRepositoryImpl extends RoomRepository {
   }
 
   @override
-  Future<Either<Failure, void>> destroy({required String code}) async {
-    final result = await _roomApi.destroy(code: code);
+  Future<Either<Failure, void>> delete({required String code}) async {
+    final result = await _roomApi.delete(code: code);
 
     return result;
   }

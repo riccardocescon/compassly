@@ -22,8 +22,8 @@ Ordine deciso: alpha con solo STUN (connessione diretta), TURN come ultimo step 
 - [X] Room persistente: struttura `rooms/{roomCode}` + sottocollezione `members/{uid}` (no array sul documento room)
 - [X] Room code: generazione, ricerca room tramite codice, join (scrittura membro in `members`)
 - [X] Leave: rimozione proprio documento da `members`; se era l'ultimo membro, eliminazione documento `rooms/{roomCode}`
-- [ ] `sessionId` deterministico per coppia: `{roomCode}_{uidA}_{uidB}` (uid ordinati alfabeticamente) — nessuna query aggiuntiva per scoprire le sessioni
-- [ ] Convenzione offerente: chi si unisce alla room dopo crea sempre l'offerta verso ciascun membro già presente; chi è già in room resta in ascolto e risponde (answer)
+- [X] `sessionId` deterministico per coppia: `{roomCode}_{uidA}_{uidB}` (uid ordinati alfabeticamente) — nessuna query aggiuntiva per scoprire le sessioni
+- [X] Convenzione offerente: chi si unisce alla room dopo crea sempre l'offerta verso ciascun membro già presente; chi è già in room resta in ascolto e risponde (answer)
 - [ ] Scrittura offerta SDP da parte di chi si unisce, verso ciascun membro esistente
 - [ ] Scrittura risposta SDP da parte di ciascun membro esistente
 - [ ] Listener su `docChanges` (tipo `added`) per candidati in arrivo su entrambe le sottocollezioni, per ciascuna sessione pairwise attiva

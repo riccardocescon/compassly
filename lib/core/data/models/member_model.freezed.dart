@@ -215,8 +215,8 @@ return $default(_that.uid,_that.name);case _:
 /// @nodoc
 @JsonSerializable()
 
-class _MemberModel implements MemberModel {
-  const _MemberModel({@JsonKey(includeToJson: false) required this.uid, required this.name});
+class _MemberModel extends MemberModel {
+  const _MemberModel({@JsonKey(includeToJson: false) required this.uid, required this.name}): super._();
   factory _MemberModel.fromJson(Map<String, dynamic> json) => _$MemberModelFromJson(json);
 
 @override@JsonKey(includeToJson: false) final  String uid;

@@ -10,9 +10,15 @@ abstract class RoomRepository {
     required String uid,
     required Member member,
   });
+  Future<Either<Failure, List<Member>>> fetchMembers({required String code});
+  Future<Either<Failure, Room>> join({
+    required String code,
+    required String uid,
+    required Member member,
+  });
   Future<Either<Failure, void>> leave({
     required String uid,
     required String code,
   });
-  Future<Either<Failure, void>> destroy({required String code});
+  Future<Either<Failure, void>> delete({required String code});
 }
