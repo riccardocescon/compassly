@@ -9,6 +9,23 @@ class RoomApi {
 
   const RoomApi({required this._firebase});
 
+  CollectionReference<RoomModel> get _rooms =>
+      _firebase.collection('rooms').withConverter<RoomModel>(
+        fromFirestore: (snapshot, _) =>
+            RoomModel.fromJson({...?snapshot.data(), 'code': snapshot.id}),
+        toFirestore: (model, _) => model.toJson(),
+      );
+
+  CollectionReference<MemberModel> _members(String code) => _firebase
+      .collection('rooms')
+      .doc(code)
+      .collection('members')
+      .withConverter<MemberModel>(
+        fromFirestore: (snapshot, _) =>
+            MemberModel.fromJson({...?snapshot.data(), 'uid': snapshot.id}),
+        toFirestore: (model, _) => model.toJson(),
+      );
+
   Future<Either<FirestoreFailure, void>> create({
     required String code,
     required String roomName,
@@ -27,13 +44,13 @@ class RoomApi {
     required String code,
   }) async {
     try {
-      final room = await _firebase.collection('rooms').doc(code).get();
+      final room = await _rooms.doc(code).get();
 
       if (!room.exists) {
         return Left(FirestoreFailure.notFound(code));
       }
 
-      return Right(RoomModel.fromJson(room.data()!));
+      return Right(room.data()!);
     } catch (e) {
       return Left(FirestoreFailure.firebaseError(e.toString()));
     }
@@ -43,17 +60,9 @@ class RoomApi {
     required String code,
   }) async {
     try {
-      final snapshot = await _firebase
-          .collection('rooms')
-          .doc(code)
-          .collection('members')
-          .get();
+      final snapshot = await _members(code).get();
 
-      final members = snapshot.docs
-          .map((doc) => MemberModel.fromJson(doc.data()))
-          .toList();
-
-      return Right(members);
+      return Right(snapshot.docs.map((doc) => doc.data()).toList());
     } catch (e) {
       return Left(FirestoreFailure.firebaseError(e.toString()));
     }
@@ -64,12 +73,7 @@ class RoomApi {
     required MemberModel member,
   }) async {
     try {
-      await _firebase
-          .collection('rooms')
-          .doc(code)
-          .collection('members')
-          .doc(member.uid)
-          .set(member.toJson());
+      await _members(code).doc(member.uid).set(member);
       return Right(null);
     } catch (e) {
       return Left(FirestoreFailure.firebaseError(e.toString()));
