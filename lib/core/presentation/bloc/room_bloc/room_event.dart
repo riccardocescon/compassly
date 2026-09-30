@@ -5,6 +5,9 @@ sealed class RoomEvent with _$RoomEvent {
   const factory RoomEvent.create() = _Create;
   const factory RoomEvent.join(String code) = _Join;
   const factory RoomEvent.leave() = _Leave;
+  const factory RoomEvent.membersUpdated({
+    required List<MemberChange> members,
+  }) = _MembersUpdated;
   const factory RoomEvent.membersWatchFailed(Failure failure) =
       _MembersWatchFailed;
 }

@@ -1,4 +1,5 @@
 import 'package:compassly/core/domain/entities/member.dart';
+import 'package:compassly/core/domain/entities/member_change.dart';
 import 'package:compassly/core/domain/entities/room.dart';
 import 'package:compassly/core/failures/failure.dart';
 import 'package:ribs_core/ribs_core.dart';
@@ -10,7 +11,7 @@ abstract class RoomRepository {
     required String uid,
     required Member member,
   });
-  Stream<Either<FirestoreFailure, List<Member>>> watchMembers({
+  Stream<Either<FirestoreFailure, List<MemberChange>>> watchMembers({
     required String code,
   });
   Future<Either<Failure, List<Member>>> fetchMembers({required String code});

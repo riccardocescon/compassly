@@ -57,19 +57,20 @@ class RoomApi {
     }
   }
 
-  Stream<Either<FirestoreFailure, List<MemberModel>>> watchMembers({
-    required String code,
-  }) async* {
+  Stream<Either<FirestoreFailure, List<(DocumentChangeType, MemberModel)>>>
+  watchMembers({required String code}) async* {
     try {
       final snapshot = _members(code).snapshots();
 
       yield* snapshot.map((snapshot) {
-        final addedDocs = snapshot.docChanges
-            .where((change) => change.type == DocumentChangeType.added)
-            .map((change) => change.doc.data()!)
-            .toList();
+        final changes = snapshot.docChanges.map((change) {
+          final type = change.type;
+          final member = change.doc.data()!;
 
-        return Right(addedDocs);
+          return (type, member);
+        }).toList();
+
+        return Right(changes);
       });
     } catch (e) {
       yield Left(FirestoreFailure.firebaseError(e.toString()));

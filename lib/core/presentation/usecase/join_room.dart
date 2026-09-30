@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:compassly/core/domain/entities/ice_candidate_document.dart';
 import 'package:compassly/core/domain/entities/member.dart';
 import 'package:compassly/core/domain/entities/room.dart';

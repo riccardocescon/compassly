@@ -28,15 +28,15 @@ Ordine deciso: alpha con solo STUN (connessione diretta), TURN come ultimo step 
 - [ ] Scrittura risposta SDP da parte di ciascun membro esistente
 - [ ] Listener su `docChanges` (tipo `added`) per candidati in arrivo su entrambe le sottocollezioni, per ciascuna sessione pairwise attiva
 - [X] `RoomRepository` (create/search/join/leave) + orchestratore (`JoinRoomUseCase`/`LeaveRoomUseCase`) che usa `RoomRepository` e il `SessionRepository` esistente per aprire/chiudere le sessioni pairwise
-- [ ] Security rules Firestore:
-  - [ ] Un utente può leggere/scrivere solo sessioni e membership di room a cui appartiene
-  - [ ] Ricerca per room code limitata ai soli campi pubblici necessari
+- [X] Security rules Firestore:
+  - [X] Un utente può leggere/scrivere solo sessioni e membership di room a cui appartiene
+  - [X] Ricerca per room code limitata ai soli campi pubblici necessari
 - [X] Pulizia: eliminazione documento sessione pairwise + sottocollezioni dopo connessione riuscita per quella coppia (`iceConnectionState == connected`) — il documento room non viene toccato da questa pulizia
-- [ ] Test manuale: 2-5 client (anche emulatori) completano join, offer/answer/candidati per ogni coppia e leave, verificando solo i dati su Firestore (senza WebRTC vero)
+- [X] Test manuale: 2-5 client (anche emulatori) completano join, offer/answer/candidati per ogni coppia e leave, verificando solo i dati su Firestore (senza WebRTC vero)
 
 ## Fase 2 — WebRTC P2P (solo STUN) — ALPHA
 
-- [ ] Creare `RTCPeerConnection` con `iceServers` contenente solo lo STUN pubblico (nessuna voce TURN per ora, ma struttura pronta per aggiungerla dopo)
+- [X] Creare `RTCPeerConnection` con `iceServers` contenente solo lo STUN pubblico (nessuna voce TURN per ora, ma struttura pronta per aggiungerla dopo)
 - [ ] Creare `DataChannel` per invio posizione
 - [ ] Collegare generazione/raccolta ICE candidate locali alla scrittura su Firestore (Fase 1)
 - [ ] Collegare candidati remoti ricevuti da Firestore a `addCandidate`

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:compassly/core/domain/entities/member.dart';
+import 'package:compassly/core/domain/entities/member_change.dart';
 import 'package:compassly/core/domain/entities/room.dart';
 import 'package:compassly/core/failures/failure.dart';
 import 'package:compassly/core/presentation/bloc/auth_bloc/auth_bloc.dart';
@@ -25,7 +26,7 @@ class RoomBloc extends Bloc<RoomEvent, RoomState> {
   final AuthBloc _authBloc;
 
   Room? _room;
-  StreamSubscription<Either<Failure, void>>? _watchMembersSub;
+  StreamSubscription<Either<Failure, List<MemberChange>>>? _watchMembersSub;
 
   Member get _member => Member(
     name: _authBloc.user!.displayName ?? 'Anonymous',
@@ -55,7 +56,7 @@ class RoomBloc extends Bloc<RoomEvent, RoomState> {
 
       room.fold((l) => emit(RoomState.error(failure: l)), (r) {
         _room = r;
-        emit(RoomState.data(room: r));
+        emit(RoomState.data(room: r, members: null));
         _startWatchingMembers(uid: user.uid, code: r.code);
       });
     });
@@ -75,7 +76,15 @@ class RoomBloc extends Bloc<RoomEvent, RoomState> {
 
       room.fold((l) => emit(RoomState.error(failure: l)), (r) {
         _room = r;
-        emit(RoomState.data(room: r));
+        emit(
+          RoomState.data(
+            room: r,
+            members: r.members
+                .where((e) => e.uid != user.uid)
+                .map((e) => MemberChange.existing(member: e))
+                .toList(),
+          ),
+        );
         _startWatchingMembers(uid: user.uid, code: r.code);
       });
     });
@@ -99,8 +108,11 @@ class RoomBloc extends Bloc<RoomEvent, RoomState> {
         _watchMembersSub?.cancel();
         _watchMembersSub = null;
         _room = null;
-        emit(const RoomState.data(room: null));
+        emit(RoomState.data(room: null, members: null));
       });
+    });
+    on<_MembersUpdated>((event, emit) {
+      emit(RoomState.data(room: _room, members: event.members));
     });
     on<_MembersWatchFailed>((event, emit) {
       emit(RoomState.error(failure: event.failure));
@@ -114,7 +126,7 @@ class RoomBloc extends Bloc<RoomEvent, RoomState> {
         .listen((result) {
           result.fold(
             (failure) => add(RoomEvent.membersWatchFailed(failure)),
-            (_) {},
+            (changes) => add(RoomEvent.membersUpdated(members: changes)),
           );
         });
   }

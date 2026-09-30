@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:compassly/core/data/api/room_api.dart';
 import 'package:compassly/core/data/models/member_model.dart';
 import 'package:compassly/core/domain/entities/member.dart';
+import 'package:compassly/core/domain/entities/member_change.dart';
 import 'package:compassly/core/domain/entities/room.dart';
 import 'package:compassly/core/domain/repositories/room_repository.dart';
 import 'package:compassly/core/failures/failure.dart';
@@ -32,7 +34,7 @@ class RoomRepositoryImpl extends RoomRepository {
   }
 
   @override
-  Stream<Either<FirestoreFailure, List<Member>>> watchMembers({
+  Stream<Either<FirestoreFailure, List<MemberChange>>> watchMembers({
     required String code,
   }) async* {
     final stream = _roomApi.watchMembers(code: code);
@@ -40,7 +42,21 @@ class RoomRepositoryImpl extends RoomRepository {
     await for (final message in stream) {
       yield message.fold(
         (l) => Left(l),
-        (r) => Right(r.map((m) => m.toEntity()).toList()),
+        (r) => Right(
+          r
+              .map((m) {
+                switch (m.$1) {
+                  case DocumentChangeType.added:
+                    return MemberChange.joined(member: m.$2.toEntity());
+                  case DocumentChangeType.removed:
+                    return MemberChange.left(member: m.$2.toEntity());
+                  default:
+                    return null;
+                }
+              })
+              .whereType<MemberChange>()
+              .toList(),
+        ),
       );
     }
   }

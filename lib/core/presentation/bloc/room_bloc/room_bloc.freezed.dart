@@ -56,13 +56,14 @@ extension RoomEventPatterns on RoomEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Create value)?  create,TResult Function( _Join value)?  join,TResult Function( _Leave value)?  leave,TResult Function( _MembersWatchFailed value)?  membersWatchFailed,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Create value)?  create,TResult Function( _Join value)?  join,TResult Function( _Leave value)?  leave,TResult Function( _MembersUpdated value)?  membersUpdated,TResult Function( _MembersWatchFailed value)?  membersWatchFailed,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _Create() when create != null:
 return create(_that);case _Join() when join != null:
 return join(_that);case _Leave() when leave != null:
-return leave(_that);case _MembersWatchFailed() when membersWatchFailed != null:
+return leave(_that);case _MembersUpdated() when membersUpdated != null:
+return membersUpdated(_that);case _MembersWatchFailed() when membersWatchFailed != null:
 return membersWatchFailed(_that);case _:
   return orElse();
 
@@ -81,13 +82,14 @@ return membersWatchFailed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Create value)  create,required TResult Function( _Join value)  join,required TResult Function( _Leave value)  leave,required TResult Function( _MembersWatchFailed value)  membersWatchFailed,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Create value)  create,required TResult Function( _Join value)  join,required TResult Function( _Leave value)  leave,required TResult Function( _MembersUpdated value)  membersUpdated,required TResult Function( _MembersWatchFailed value)  membersWatchFailed,}){
 final _that = this;
 switch (_that) {
 case _Create():
 return create(_that);case _Join():
 return join(_that);case _Leave():
-return leave(_that);case _MembersWatchFailed():
+return leave(_that);case _MembersUpdated():
+return membersUpdated(_that);case _MembersWatchFailed():
 return membersWatchFailed(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -102,13 +104,14 @@ return membersWatchFailed(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Create value)?  create,TResult? Function( _Join value)?  join,TResult? Function( _Leave value)?  leave,TResult? Function( _MembersWatchFailed value)?  membersWatchFailed,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Create value)?  create,TResult? Function( _Join value)?  join,TResult? Function( _Leave value)?  leave,TResult? Function( _MembersUpdated value)?  membersUpdated,TResult? Function( _MembersWatchFailed value)?  membersWatchFailed,}){
 final _that = this;
 switch (_that) {
 case _Create() when create != null:
 return create(_that);case _Join() when join != null:
 return join(_that);case _Leave() when leave != null:
-return leave(_that);case _MembersWatchFailed() when membersWatchFailed != null:
+return leave(_that);case _MembersUpdated() when membersUpdated != null:
+return membersUpdated(_that);case _MembersWatchFailed() when membersWatchFailed != null:
 return membersWatchFailed(_that);case _:
   return null;
 
@@ -126,12 +129,13 @@ return membersWatchFailed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  create,TResult Function( String code)?  join,TResult Function()?  leave,TResult Function( Failure failure)?  membersWatchFailed,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  create,TResult Function( String code)?  join,TResult Function()?  leave,TResult Function( List<MemberChange> members)?  membersUpdated,TResult Function( Failure failure)?  membersWatchFailed,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Create() when create != null:
 return create();case _Join() when join != null:
 return join(_that.code);case _Leave() when leave != null:
-return leave();case _MembersWatchFailed() when membersWatchFailed != null:
+return leave();case _MembersUpdated() when membersUpdated != null:
+return membersUpdated(_that.members);case _MembersWatchFailed() when membersWatchFailed != null:
 return membersWatchFailed(_that.failure);case _:
   return orElse();
 
@@ -150,12 +154,13 @@ return membersWatchFailed(_that.failure);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  create,required TResult Function( String code)  join,required TResult Function()  leave,required TResult Function( Failure failure)  membersWatchFailed,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  create,required TResult Function( String code)  join,required TResult Function()  leave,required TResult Function( List<MemberChange> members)  membersUpdated,required TResult Function( Failure failure)  membersWatchFailed,}) {final _that = this;
 switch (_that) {
 case _Create():
 return create();case _Join():
 return join(_that.code);case _Leave():
-return leave();case _MembersWatchFailed():
+return leave();case _MembersUpdated():
+return membersUpdated(_that.members);case _MembersWatchFailed():
 return membersWatchFailed(_that.failure);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -170,12 +175,13 @@ return membersWatchFailed(_that.failure);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  create,TResult? Function( String code)?  join,TResult? Function()?  leave,TResult? Function( Failure failure)?  membersWatchFailed,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  create,TResult? Function( String code)?  join,TResult? Function()?  leave,TResult? Function( List<MemberChange> members)?  membersUpdated,TResult? Function( Failure failure)?  membersWatchFailed,}) {final _that = this;
 switch (_that) {
 case _Create() when create != null:
 return create();case _Join() when join != null:
 return join(_that.code);case _Leave() when leave != null:
-return leave();case _MembersWatchFailed() when membersWatchFailed != null:
+return leave();case _MembersUpdated() when membersUpdated != null:
+return membersUpdated(_that.members);case _MembersWatchFailed() when membersWatchFailed != null:
 return membersWatchFailed(_that.failure);case _:
   return null;
 
@@ -315,6 +321,80 @@ String toString() {
 
 
 
+
+/// @nodoc
+
+
+class _MembersUpdated implements RoomEvent {
+  const _MembersUpdated({required  List<MemberChange> members}): _members = members;
+  
+
+ final  List<MemberChange> _members;
+ List<MemberChange> get members {
+  if (_members is EqualUnmodifiableListView) return _members;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_members);
+}
+
+
+/// Create a copy of RoomEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$MembersUpdatedCopyWith<_MembersUpdated> get copyWith => __$MembersUpdatedCopyWithImpl<_MembersUpdated>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MembersUpdated&&const DeepCollectionEquality().equals(other.members, _members));
+}
+
+
+@override
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_members));
+}
+
+@override
+String toString() {
+    return 'RoomEvent.membersUpdated(members: $members)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$MembersUpdatedCopyWith<$Res> implements $RoomEventCopyWith<$Res> {
+  factory _$MembersUpdatedCopyWith(_MembersUpdated value, $Res Function(_MembersUpdated) _then) = __$MembersUpdatedCopyWithImpl;
+@useResult
+$Res call({
+ List<MemberChange> members
+});
+
+
+
+
+}
+/// @nodoc
+class __$MembersUpdatedCopyWithImpl<$Res>
+    implements _$MembersUpdatedCopyWith<$Res> {
+  __$MembersUpdatedCopyWithImpl(this._self, this._then);
+
+  final _MembersUpdated _self;
+  final $Res Function(_MembersUpdated) _then;
+
+/// Create a copy of RoomEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? members = null,}) {
+  return _then(_MembersUpdated(
+members: null == members ? _self._members : members // ignore: cast_nullable_to_non_nullable
+as List<MemberChange>,
+  ));
+}
+
+
+}
 
 /// @nodoc
 
@@ -498,12 +578,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  init,TResult Function()?  loading,TResult Function( Room? room)?  data,TResult Function( Failure failure)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  init,TResult Function()?  loading,TResult Function( Room? room,  List<MemberChange>? members)?  data,TResult Function( Failure failure)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Init() when init != null:
 return init();case _Loading() when loading != null:
 return loading();case _Data() when data != null:
-return data(_that.room);case _Error() when error != null:
+return data(_that.room,_that.members);case _Error() when error != null:
 return error(_that.failure);case _:
   return orElse();
 
@@ -522,12 +602,12 @@ return error(_that.failure);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  init,required TResult Function()  loading,required TResult Function( Room? room)  data,required TResult Function( Failure failure)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  init,required TResult Function()  loading,required TResult Function( Room? room,  List<MemberChange>? members)  data,required TResult Function( Failure failure)  error,}) {final _that = this;
 switch (_that) {
 case _Init():
 return init();case _Loading():
 return loading();case _Data():
-return data(_that.room);case _Error():
+return data(_that.room,_that.members);case _Error():
 return error(_that.failure);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -542,12 +622,12 @@ return error(_that.failure);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  init,TResult? Function()?  loading,TResult? Function( Room? room)?  data,TResult? Function( Failure failure)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  init,TResult? Function()?  loading,TResult? Function( Room? room,  List<MemberChange>? members)?  data,TResult? Function( Failure failure)?  error,}) {final _that = this;
 switch (_that) {
 case _Init() when init != null:
 return init();case _Loading() when loading != null:
 return loading();case _Data() when data != null:
-return data(_that.room);case _Error() when error != null:
+return data(_that.room,_that.members);case _Error() when error != null:
 return error(_that.failure);case _:
   return null;
 
@@ -624,10 +704,19 @@ String toString() {
 
 
 class _Data implements RoomState {
-  const _Data({this.room});
+  const _Data({required this.room, required  List<MemberChange>? members}): _members = members;
   
 
  final  Room? room;
+ final  List<MemberChange>? _members;
+ List<MemberChange>? get members {
+  final value = _members;
+  if (value == null) return null;
+  if (_members is EqualUnmodifiableListView) return _members;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
 
 /// Create a copy of RoomState
 /// with the given fields replaced by the non-null parameter values.
@@ -639,18 +728,18 @@ _$DataCopyWith<_Data> get copyWith => __$DataCopyWithImpl<_Data>(this, _$identit
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Data&&(identical(other.room, room) || other.room == room));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Data&&(identical(other.room, room) || other.room == room)&&const DeepCollectionEquality().equals(other.members, _members));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,room);
+    return Object.hash(runtimeType,room,const DeepCollectionEquality().hash(_members));
 }
 
 @override
 String toString() {
-    return 'RoomState.data(room: $room)';
+    return 'RoomState.data(room: $room, members: $members)';
 }
 
 
@@ -661,7 +750,7 @@ abstract mixin class _$DataCopyWith<$Res> implements $RoomStateCopyWith<$Res> {
   factory _$DataCopyWith(_Data value, $Res Function(_Data) _then) = __$DataCopyWithImpl;
 @useResult
 $Res call({
- Room? room
+ Room? room, List<MemberChange>? members
 });
 
 
@@ -678,10 +767,11 @@ class __$DataCopyWithImpl<$Res>
 
 /// Create a copy of RoomState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? room = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? room = freezed,Object? members = freezed,}) {
   return _then(_Data(
 room: freezed == room ? _self.room : room // ignore: cast_nullable_to_non_nullable
-as Room?,
+as Room?,members: freezed == members ? _self._members : members // ignore: cast_nullable_to_non_nullable
+as List<MemberChange>?,
   ));
 }
 
