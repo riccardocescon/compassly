@@ -1,9 +1,11 @@
-import 'package:compassly/core/domain/entities/ice_candidate_document.dart';
+import 'dart:developer';
+
 import 'package:compassly/core/domain/entities/session_description.dart';
 import 'package:compassly/core/domain/repositories/session_repository.dart';
 import 'package:compassly/core/failures/failure.dart';
 import 'package:compassly/core/presentation/usecase/usecase.dart';
 import 'package:compassly/core/utils/generators.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:ribs_core/ribs_core.dart';
 
 class SessionAnswer extends Usecase<SessionAnswerParams, void> {
@@ -19,32 +21,64 @@ class SessionAnswer extends Usecase<SessionAnswerParams, void> {
       uidB: params.memberUid,
     );
 
-    final foSession = await _sessionRepository.create(code: sessionCode);
-    if (foSession case Left(:final a)) {
-      return Left(a);
-    }
+    try {
+      print('[DBG-RTC] ANSWERER start session=$sessionCode');
+      SessionDescription? sessionDescriptor;
+      Failure? failure;
+      await _sessionRepository
+          .watchSession(code: sessionCode)
+          .timeout(const Duration(seconds: 30))
+          .firstWhere(
+            (e) => e.fold(
+              (l) {
+                log('Error: ${l.message}');
+                failure = l;
+                return false;
+              },
+              (doc) {
+                if (doc.offer == null) return false;
 
-    final foOffer = await _sessionRepository.writeAnswer(
-      code: sessionCode,
-      answer: SessionDescription(sdp: 'sdp', type: 'answer'),
-    );
-    if (foOffer case Left(:final a)) {
-      return Left(a);
-    }
+                sessionDescriptor = doc.offer;
+                return true;
+              },
+            ),
+          );
 
-    final foCandidate = await _sessionRepository.addAnswerCandidate(
-      code: sessionCode,
-      candidate: ICECandidateDocument(
-        id: '',
-        candidate: 'candidate',
-        sdpMid: 'sdpMid',
-        sdpMLineIndex: 0,
-      ),
-    );
-    if (foCandidate case Left(:final a)) {
-      return Left(a);
+      print('[DBG-RTC] ANSWERER offer received, failure=$failure');
+      if (failure != null) return Left(failure!);
+      if (sessionDescriptor == null) {
+        return Left(SessionFailure.timeout('SessionDescriptor not created'));
+      }
+
+      await params.peerConnection.setRemoteDescription(
+        RTCSessionDescription(sessionDescriptor!.sdp, sessionDescriptor!.type),
+      );
+
+      print('[DBG-RTC] ANSWERER remote description set');
+      final sessionDescription = await params.peerConnection.createAnswer();
+
+      final (sdp, type) = (sessionDescription.sdp, sessionDescription.type);
+      if (sdp == null || type == null) {
+        return Left(DataFailure.preprocess('sdp or type is null'));
+      }
+
+      print('[DBG-RTC] ANSWERER answer created');
+      await params.peerConnection.setLocalDescription(sessionDescription);
+
+      final foAnswer = await _sessionRepository.writeAnswer(
+        code: sessionCode,
+        answer: SessionDescription(sdp: sdp, type: type),
+      );
+      print('[DBG-RTC] ANSWERER answer written, isLeft=${foAnswer.isLeft}');
+      if (foAnswer case Left(:final a)) {
+        return Left(a);
+      }
+
+      return const Right(null);
+    } catch (e, st) {
+      print('[DBG-RTC] ANSWERER CATCH $e\n$st');
+      return Left(SessionFailure.catched(e.toString()));
     }
-    return const Right(null);
   }
 }
 
@@ -52,10 +86,12 @@ class SessionAnswerParams {
   final String code;
   final String memberUid;
   final String uid;
+  final RTCPeerConnection peerConnection;
 
   SessionAnswerParams({
     required this.code,
     required this.memberUid,
     required this.uid,
+    required this.peerConnection,
   });
 }

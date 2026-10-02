@@ -26,3 +26,16 @@ class DataFailure extends Failure {
 
   factory DataFailure.preprocess(String error) => DataFailure._(message: error);
 }
+
+class SessionFailure extends Failure {
+  const SessionFailure._({required super.message});
+
+  factory SessionFailure.closed(String message) =>
+      SessionFailure._(message: message);
+
+  factory SessionFailure.timeout(String message) =>
+      SessionFailure._(message: message);
+
+  factory SessionFailure.catched(String error) =>
+      SessionFailure._(message: error);
+}

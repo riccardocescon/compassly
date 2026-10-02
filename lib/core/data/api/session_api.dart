@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -128,21 +129,33 @@ class SessionApi {
     }
   }
 
+  /// Non usare `async*` + `await for` qui: `cancel()` su un generatore
+  /// aspetta che il generatore termini, e quello resta bloccato in attesa del
+  /// prossimo snapshot. Con `transform`, il cancel arriva direttamente alla
+  /// sottoscrizione di Firestore e si completa subito.
   Stream<Either<FirestoreFailure, List<ICECandidateDocumentModel>>>
-  watchOfferCandidates({required String sessionId}) async* {
-    try {
-      final snapshots = _offerCandidates(sessionId).snapshots();
-      await for (final snapshot in snapshots) {
-        final addedDocs = snapshot.docChanges
-            .where((change) => change.type == DocumentChangeType.added)
-            .map((change) => change.doc.data()!)
-            .toList();
-        yield Right(addedDocs);
-      }
-    } catch (e) {
-      yield Left(FirestoreFailure.firebaseError(e.toString()));
-    }
+  _watchCandidates(CollectionReference<ICECandidateDocumentModel> candidates) {
+    return candidates.snapshots().transform(
+      StreamTransformer<
+        QuerySnapshot<ICECandidateDocumentModel>,
+        Either<FirestoreFailure, List<ICECandidateDocumentModel>>
+      >.fromHandlers(
+        handleData: (snapshot, sink) {
+          final addedDocs = snapshot.docChanges
+              .where((change) => change.type == DocumentChangeType.added)
+              .map((change) => change.doc.data()!)
+              .toList();
+          sink.add(Right(addedDocs));
+        },
+        handleError: (error, _, sink) =>
+            sink.add(Left(FirestoreFailure.firebaseError(error.toString()))),
+      ),
+    );
   }
+
+  Stream<Either<FirestoreFailure, List<ICECandidateDocumentModel>>>
+  watchOfferCandidates({required String sessionId}) =>
+      _watchCandidates(_offerCandidates(sessionId));
 
   Future<Either<FirestoreFailure, void>> addAnswerCandidate({
     required String sessionId,
@@ -157,20 +170,8 @@ class SessionApi {
   }
 
   Stream<Either<FirestoreFailure, List<ICECandidateDocumentModel>>>
-  watchAnswerCandidates({required String sessionId}) async* {
-    try {
-      final snapshots = _answerCandidates(sessionId).snapshots();
-      await for (final snapshot in snapshots) {
-        final addedDocs = snapshot.docChanges
-            .where((change) => change.type == DocumentChangeType.added)
-            .map((change) => change.doc.data()!)
-            .toList();
-        yield Right(addedDocs);
-      }
-    } catch (e) {
-      yield Left(FirestoreFailure.firebaseError(e.toString()));
-    }
-  }
+  watchAnswerCandidates({required String sessionId}) =>
+      _watchCandidates(_answerCandidates(sessionId));
 
   Future<void> clearAllCandidates({required String sessionId}) async {
     try {

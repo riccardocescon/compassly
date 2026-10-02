@@ -7,6 +7,7 @@ import 'package:compassly/core/data/repositories/session_repository_impl.dart';
 import 'package:compassly/core/presentation/bloc/auth_bloc/auth_bloc.dart';
 import 'package:compassly/core/presentation/bloc/connection_bloc/connection_bloc.dart';
 import 'package:compassly/core/presentation/bloc/room_bloc/room_bloc.dart';
+import 'package:compassly/core/presentation/usecase/create_peer_connection.dart';
 import 'package:compassly/core/presentation/usecase/create_room.dart';
 import 'package:compassly/core/presentation/usecase/join_room.dart';
 import 'package:compassly/core/presentation/usecase/leave_room.dart';
@@ -44,10 +45,7 @@ class App extends StatelessWidget {
             return RoomBloc(
               authBloc: context.read(),
               createRoom: CreateRoomUsecase(roomRepository: roomRepository),
-              joinRoom: JoinRoomUsecase(
-                roomRepository: roomRepository,
-                sessionRepository: sessionRepository,
-              ),
+              joinRoom: JoinRoomUsecase(roomRepository: roomRepository),
               watchMembers: WatchMembersUsecase(roomRepository: roomRepository),
               leaveRoom: LeaveRoomUsecase(
                 roomRepository: roomRepository,
@@ -57,10 +55,14 @@ class App extends StatelessWidget {
           },
         ),
         BlocProvider(
+          lazy: false,
           create: (context) {
             return ConnectionBloc(
               authBloc: context.read<AuthBloc>(),
               roomBloc: context.read<RoomBloc>(),
+              createPeerConnectionUsecase: CreatePeerConnectionUsecase(
+                sessionRepository: sessionRepository,
+              ),
               sessionRepository: sessionRepository,
               sessionAnswer: SessionAnswer(
                 sessionRepository: sessionRepository,

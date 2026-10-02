@@ -24,7 +24,7 @@ Ordine deciso: alpha con solo STUN (connessione diretta), TURN come ultimo step 
 - [X] Leave: rimozione proprio documento da `members`; se era l'ultimo membro, eliminazione documento `rooms/{roomCode}`
 - [X] `sessionId` deterministico per coppia: `{roomCode}_{uidA}_{uidB}` (uid ordinati alfabeticamente) — nessuna query aggiuntiva per scoprire le sessioni
 - [X] Convenzione offerente: chi si unisce alla room dopo crea sempre l'offerta verso ciascun membro già presente; chi è già in room resta in ascolto e risponde (answer)
-- [ ] Scrittura offerta SDP da parte di chi si unisce, verso ciascun membro esistente
+- [X] Scrittura offerta SDP da parte di chi si unisce, verso ciascun membro esistente
 - [ ] Scrittura risposta SDP da parte di ciascun membro esistente
 - [ ] Listener su `docChanges` (tipo `added`) per candidati in arrivo su entrambe le sottocollezioni, per ciascuna sessione pairwise attiva
 - [X] `RoomRepository` (create/search/join/leave) + orchestratore (`JoinRoomUseCase`/`LeaveRoomUseCase`) che usa `RoomRepository` e il `SessionRepository` esistente per aprire/chiudere le sessioni pairwise
@@ -37,9 +37,9 @@ Ordine deciso: alpha con solo STUN (connessione diretta), TURN come ultimo step 
 ## Fase 2 — WebRTC P2P (solo STUN) — ALPHA
 
 - [X] Creare `RTCPeerConnection` con `iceServers` contenente solo lo STUN pubblico (nessuna voce TURN per ora, ma struttura pronta per aggiungerla dopo)
-- [ ] Creare `DataChannel` per invio posizione
+- [X] Creare `DataChannel` per invio posizione
 - [ ] Collegare generazione/raccolta ICE candidate locali alla scrittura su Firestore (Fase 1)
-- [ ] Collegare candidati remoti ricevuti da Firestore a `addCandidate`
+- [X] Collegare candidati remoti ricevuti da Firestore a `addCandidate`
 - [ ] Verificare `onIceConnectionState` → arriva a `connected` su rete locale/WiFi
 - [ ] Invio posizione GPS (lat/lon) via DataChannel, aggiornamento ogni secondo
 - [ ] Ricezione posizione amico via DataChannel, nessuna scrittura su Firestore per questi dati

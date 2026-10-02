@@ -1,22 +1,14 @@
-import 'package:compassly/core/domain/entities/ice_candidate_document.dart';
 import 'package:compassly/core/domain/entities/member.dart';
 import 'package:compassly/core/domain/entities/room.dart';
-import 'package:compassly/core/domain/entities/session_description.dart';
 import 'package:compassly/core/domain/repositories/room_repository.dart';
-import 'package:compassly/core/domain/repositories/session_repository.dart';
 import 'package:compassly/core/failures/failure.dart';
 import 'package:compassly/core/presentation/usecase/usecase.dart';
-import 'package:compassly/core/utils/generators.dart';
 import 'package:ribs_core/ribs_core.dart';
 
 class JoinRoomUsecase extends Usecase<JoinRoomUsecaseParams, Room> {
   final RoomRepository _roomRepository;
-  final SessionRepository _sessionRepository;
 
-  const JoinRoomUsecase({
-    required this._roomRepository,
-    required this._sessionRepository,
-  });
+  const JoinRoomUsecase({required this._roomRepository});
 
   @override
   Future<Either<Failure, Room>> call(JoinRoomUsecaseParams params) async {
@@ -34,45 +26,7 @@ class JoinRoomUsecase extends Usecase<JoinRoomUsecaseParams, Room> {
 
     final members = foMembers.getOrElse(() => []);
 
-    for (final member in members) {
-      if (member.uid == params.uid) continue;
-
-      final sessionCode = Generators.generateSessionId(
-        roomCode: params.code,
-        uidA: params.uid,
-        uidB: member.uid,
-      );
-
-      final foSession = await _sessionRepository.create(code: sessionCode);
-      if (foSession case Left(:final a)) {
-        return Left(a);
-      }
-
-      final foOffer = await _sessionRepository.writeOffer(
-        code: sessionCode,
-        offer: SessionDescription(sdp: 'sdp', type: 'offer'),
-      );
-      if (foOffer case Left(:final a)) {
-        return Left(a);
-      }
-
-      final foCandidate = await _sessionRepository.addOfferCandidate(
-        code: sessionCode,
-        candidate: ICECandidateDocument(
-          id: '',
-          candidate: 'candidate',
-          sdpMid: 'sdpMid',
-          sdpMLineIndex: 0,
-        ),
-      );
-      if (foCandidate case Left(:final a)) {
-        return Left(a);
-      }
-    }
-
-    final room = Room(code: params.code, members: members);
-
-    return Right(room);
+    return Right(Room(code: params.code, members: members));
   }
 }
 

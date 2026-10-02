@@ -78,14 +78,14 @@ class RoomBloc extends Bloc<RoomEvent, RoomState> {
         _room = r;
         emit(
           RoomState.data(
-            room: r,
-            members: r.members
+            room: _room,
+            members: _room?.members
                 .where((e) => e.uid != user.uid)
                 .map((e) => MemberChange.existing(member: e))
                 .toList(),
           ),
         );
-        _startWatchingMembers(uid: user.uid, code: r.code);
+        _startWatchingMembers(uid: user.uid, code: event.code);
       });
     });
     on<_Leave>((event, emit) async {
