@@ -25,8 +25,8 @@ Ordine deciso: alpha con solo STUN (connessione diretta), TURN come ultimo step 
 - [X] `sessionId` deterministico per coppia: `{roomCode}_{uidA}_{uidB}` (uid ordinati alfabeticamente) — nessuna query aggiuntiva per scoprire le sessioni
 - [X] Convenzione offerente: chi si unisce alla room dopo crea sempre l'offerta verso ciascun membro già presente; chi è già in room resta in ascolto e risponde (answer)
 - [X] Scrittura offerta SDP da parte di chi si unisce, verso ciascun membro esistente
-- [ ] Scrittura risposta SDP da parte di ciascun membro esistente
-- [ ] Listener su `docChanges` (tipo `added`) per candidati in arrivo su entrambe le sottocollezioni, per ciascuna sessione pairwise attiva
+- [X] Scrittura risposta SDP da parte di ciascun membro esistente
+- [X] Listener su `docChanges` (tipo `added`) per candidati in arrivo su entrambe le sottocollezioni, per ciascuna sessione pairwise attiva
 - [X] `RoomRepository` (create/search/join/leave) + orchestratore (`JoinRoomUseCase`/`LeaveRoomUseCase`) che usa `RoomRepository` e il `SessionRepository` esistente per aprire/chiudere le sessioni pairwise
 - [X] Security rules Firestore:
   - [X] Un utente può leggere/scrivere solo sessioni e membership di room a cui appartiene
@@ -40,7 +40,7 @@ Ordine deciso: alpha con solo STUN (connessione diretta), TURN come ultimo step 
 - [X] Creare `DataChannel` per invio posizione
 - [ ] Collegare generazione/raccolta ICE candidate locali alla scrittura su Firestore (Fase 1)
 - [X] Collegare candidati remoti ricevuti da Firestore a `addCandidate`
-- [ ] Verificare `onIceConnectionState` → arriva a `connected` su rete locale/WiFi
+- [X] Verificare `onIceConnectionState` → arriva a `connected` su rete locale/WiFi
 - [ ] Invio posizione GPS (lat/lon) via DataChannel, aggiornamento ogni secondo
 - [ ] Ricezione posizione amico via DataChannel, nessuna scrittura su Firestore per questi dati
 - [ ] Calcolo bearing/distanza (Haversine) client-side tra posizione propria e posizione ricevuta

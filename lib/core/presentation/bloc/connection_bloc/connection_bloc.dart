@@ -3,7 +3,9 @@ import 'dart:developer';
 
 import 'package:compassly/core/domain/entities/member_change.dart';
 import 'package:compassly/core/domain/entities/peer_connection_data.dart';
+import 'package:compassly/core/domain/entities/peer_status.dart';
 import 'package:compassly/core/domain/repositories/session_repository.dart';
+import 'package:compassly/core/failures/failure.dart';
 import 'package:compassly/core/presentation/bloc/auth_bloc/auth_bloc.dart';
 import 'package:compassly/core/presentation/bloc/room_bloc/room_bloc.dart';
 import 'package:compassly/core/presentation/usecase/create_peer_connection.dart';
@@ -19,6 +21,10 @@ part 'connection_bloc.freezed.dart';
 
 class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
   final _peerConnections = <PeerConnectionData>[];
+
+  /// Cache dello stato per membro: è la fonte di verità, gli stati emessi
+  /// ne sono solo una proiezione. Sopravvive a qualsiasi altro stato emesso.
+  final _peerStatuses = <String, PeerStatus>{};
   final RoomBloc _roomBloc;
   final AuthBloc _authBloc;
   final SessionRepository _sessionRepository;
@@ -52,6 +58,7 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
     on<_MemberChanged>((event, emit) async {
       switch (event.change) {
         case MemberJoined(:final member):
+          _setPeer(emit, member.uid, const PeerStatus.connecting());
           final pc = await createPeerConnection({
             'iceServers': [
               {'urls': 'stun:stun.l.google.com:19302'},
@@ -65,9 +72,11 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
               peerConnection: pc,
             ),
           );
+          _setPeer(emit, member.uid, _toStatus(foAnswer));
           break;
 
         case MemberExisting(:final member):
+          _setPeer(emit, member.uid, const PeerStatus.connecting());
           final pc = await createPeerConnection({
             'iceServers': [
               {'urls': 'stun:stun.l.google.com:19302'},
@@ -96,14 +105,37 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
             log('Error: ${foCreateConnection.leftOption.getOrNull?.message}');
             await _closeMemberConnection(member.uid);
           }
+          _setPeer(emit, member.uid, _toStatus(foCreateConnection));
 
           break;
 
         case MemberLeft(:final member):
           await _closeMemberConnection(member.uid);
+          _removePeer(emit, member.uid);
           break;
       }
     });
+  }
+
+  PeerStatus _toStatus(Either<Failure, void> result) => result.fold<PeerStatus>(
+    (failure) => PeerStatus.failed(failure: failure),
+    (_) => const PeerStatus.connected(),
+  );
+
+  void _setPeer(Emitter<ConnectionState> emit, String uid, PeerStatus status) {
+    _peerStatuses[uid] = status;
+    _emitPeers(emit);
+  }
+
+  void _removePeer(Emitter<ConnectionState> emit, String uid) {
+    _peerStatuses.remove(uid);
+    _emitPeers(emit);
+  }
+
+  /// Si emette una copia: freezed incapsula la mappa in una view, non la
+  /// duplica, e mutare la cache cambierebbe anche lo stato già emesso.
+  void _emitPeers(Emitter<ConnectionState> emit) {
+    emit(ConnectionState.data(peers: Map.of(_peerStatuses)));
   }
 
   Future<void> _closeMemberConnection(String memberUid) async {

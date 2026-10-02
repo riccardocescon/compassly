@@ -335,13 +335,12 @@ extension ConnectionStatePatterns on ConnectionState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Init value)?  init,TResult Function( _Loading value)?  loading,TResult Function( _Error value)?  error,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Init value)?  init,TResult Function( _Data value)?  data,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _Init() when init != null:
-return init(_that);case _Loading() when loading != null:
-return loading(_that);case _Error() when error != null:
-return error(_that);case _:
+return init(_that);case _Data() when data != null:
+return data(_that);case _:
   return orElse();
 
 }
@@ -359,13 +358,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Init value)  init,required TResult Function( _Loading value)  loading,required TResult Function( _Error value)  error,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Init value)  init,required TResult Function( _Data value)  data,}){
 final _that = this;
 switch (_that) {
 case _Init():
-return init(_that);case _Loading():
-return loading(_that);case _Error():
-return error(_that);}
+return init(_that);case _Data():
+return data(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -379,13 +377,12 @@ return error(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Init value)?  init,TResult? Function( _Loading value)?  loading,TResult? Function( _Error value)?  error,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Init value)?  init,TResult? Function( _Data value)?  data,}){
 final _that = this;
 switch (_that) {
 case _Init() when init != null:
-return init(_that);case _Loading() when loading != null:
-return loading(_that);case _Error() when error != null:
-return error(_that);case _:
+return init(_that);case _Data() when data != null:
+return data(_that);case _:
   return null;
 
 }
@@ -402,12 +399,11 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  init,TResult Function()?  loading,TResult Function()?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  init,TResult Function( Map<String, PeerStatus> peers)?  data,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Init() when init != null:
-return init();case _Loading() when loading != null:
-return loading();case _Error() when error != null:
-return error();case _:
+return init();case _Data() when data != null:
+return data(_that.peers);case _:
   return orElse();
 
 }
@@ -425,12 +421,11 @@ return error();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  init,required TResult Function()  loading,required TResult Function()  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  init,required TResult Function( Map<String, PeerStatus> peers)  data,}) {final _that = this;
 switch (_that) {
 case _Init():
-return init();case _Loading():
-return loading();case _Error():
-return error();}
+return init();case _Data():
+return data(_that.peers);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -444,12 +439,11 @@ return error();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  init,TResult? Function()?  loading,TResult? Function()?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  init,TResult? Function( Map<String, PeerStatus> peers)?  data,}) {final _that = this;
 switch (_that) {
 case _Init() when init != null:
-return init();case _Loading() when loading != null:
-return loading();case _Error() when error != null:
-return error();case _:
+return init();case _Data() when data != null:
+return data(_that.peers);case _:
   return null;
 
 }
@@ -492,65 +486,75 @@ String toString() {
 /// @nodoc
 
 
-class _Loading implements ConnectionState {
-  const _Loading();
+class _Data implements ConnectionState {
+  const _Data({required  Map<String, PeerStatus> peers}): _peers = peers;
   
 
+ final  Map<String, PeerStatus> _peers;
+ Map<String, PeerStatus> get peers {
+  if (_peers is EqualUnmodifiableMapView) return _peers;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_peers);
+}
 
 
+/// Create a copy of ConnectionState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$DataCopyWith<_Data> get copyWith => __$DataCopyWithImpl<_Data>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loading);
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Data&&const DeepCollectionEquality().equals(other.peers, _peers));
 }
 
 
 @override
-int get hashCode => runtimeType.hashCode;
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_peers));
+}
 
 @override
 String toString() {
-    return 'ConnectionState.loading()';
+    return 'ConnectionState.data(peers: $peers)';
 }
 
 
 }
-
-
-
 
 /// @nodoc
+abstract mixin class _$DataCopyWith<$Res> implements $ConnectionStateCopyWith<$Res> {
+  factory _$DataCopyWith(_Data value, $Res Function(_Data) _then) = __$DataCopyWithImpl;
+@useResult
+$Res call({
+ Map<String, PeerStatus> peers
+});
 
 
-class _Error implements ConnectionState {
-  const _Error();
-  
-
-
-
-
-
-
-@override
-bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Error);
-}
-
-
-@override
-int get hashCode => runtimeType.hashCode;
-
-@override
-String toString() {
-    return 'ConnectionState.error()';
-}
 
 
 }
+/// @nodoc
+class __$DataCopyWithImpl<$Res>
+    implements _$DataCopyWith<$Res> {
+  __$DataCopyWithImpl(this._self, this._then);
+
+  final _Data _self;
+  final $Res Function(_Data) _then;
+
+/// Create a copy of ConnectionState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? peers = null,}) {
+  return _then(_Data(
+peers: null == peers ? _self._peers : peers // ignore: cast_nullable_to_non_nullable
+as Map<String, PeerStatus>,
+  ));
+}
 
 
-
+}
 
 // dart format on

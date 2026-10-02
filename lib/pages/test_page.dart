@@ -1,6 +1,9 @@
+import 'package:compassly/core/domain/entities/peer_status.dart';
 import 'package:compassly/core/domain/entities/room.dart';
+import 'package:compassly/core/presentation/bloc/connection_bloc/connection_bloc.dart';
 import 'package:compassly/features/presentation/bloc/test_page_bloc/test_page_bloc.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ConnectionState;
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TestPage extends StatefulWidget {
@@ -69,7 +72,15 @@ class _TestPageState extends State<TestPage> {
             SizedBox(
               width: 300,
               height: 100,
-              child: TextFormField(controller: _controller),
+              child: TextFormField(
+                controller: _controller,
+                inputFormatters: [
+                  TextInputFormatter.withFunction(
+                    (old, value) =>
+                        value.copyWith(text: value.text.toUpperCase()),
+                  ),
+                ],
+              ),
             ),
             ElevatedButton(
               onPressed: () => context.read<TestPageBloc>().add(
@@ -91,7 +102,25 @@ class _TestPageState extends State<TestPage> {
           const SizedBox(height: 16),
           Text('Members: ${room.members.length}'),
         ],
+        const SizedBox(height: 16),
+        BlocBuilder<ConnectionBloc, ConnectionState>(
+          builder: (context, state) => state.maybeMap(
+            data: (s) => Column(
+              children: [
+                for (final entry in s.peers.entries)
+                  Text('${entry.key}: ${_statusLabel(entry.value)}'),
+              ],
+            ),
+            orElse: () => const SizedBox.shrink(),
+          ),
+        ),
       ],
     );
   }
+
+  String _statusLabel(PeerStatus status) => switch (status) {
+    PeerConnecting() => 'Connecting...',
+    PeerConnected() => 'Connected',
+    PeerFailed(:final failure) => 'Error: ${failure.message}',
+  };
 }
