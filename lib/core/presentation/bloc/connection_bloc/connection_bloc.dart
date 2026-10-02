@@ -34,9 +34,7 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
     required this._sessionAnswer,
     required this._createPeerConnectionUsecase,
   }) : super(const ConnectionState.init()) {
-    print('[DBG-RTC] ConnectionBloc created');
     _roomSub = _roomBloc.stream.listen((roomState) {
-      print('[DBG-RTC] roomState=${roomState.runtimeType}');
       roomState.maybeMap(
         data: (value) {
           for (final memberChange in value.members ?? []) {
@@ -52,7 +50,6 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
       );
     });
     on<_MemberChanged>((event, emit) async {
-      print('[DBG-RTC] memberChanged ${event.change.runtimeType}');
       switch (event.change) {
         case MemberJoined(:final member):
           final pc = await createPeerConnection({
@@ -68,7 +65,6 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
               peerConnection: pc,
             ),
           );
-          print('[DBG-RTC] sessionAnswer result isLeft=${foAnswer.isLeft}');
           break;
 
         case MemberExisting(:final member):
@@ -96,7 +92,6 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
               uid: _authBloc.user!.uid,
             ),
           );
-          print('[DBG-RTC] createPeerConnection result isLeft=${foCreateConnection.isLeft}');
           if (foCreateConnection.isLeft) {
             log('Error: ${foCreateConnection.leftOption.getOrNull?.message}');
             await _closeMemberConnection(member.uid);

@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:compassly/core/domain/entities/ice_candidate_document.dart';
 import 'package:compassly/core/domain/entities/peer_connection_data.dart';
 import 'package:compassly/core/domain/entities/session_description.dart';
-import 'package:compassly/core/domain/entities/session_document.dart';
 import 'package:compassly/core/failures/failure.dart';
 import 'package:compassly/core/domain/repositories/session_repository.dart';
 import 'package:compassly/core/presentation/usecase/usecase.dart';
@@ -18,31 +17,6 @@ class CreatePeerConnectionUsecase
 
   const CreatePeerConnectionUsecase({required this._sessionRepository});
 
-  ICECandidateDocument? _parseRTCICEToDoc(RTCIceCandidate rtcCandidate) {
-    final (sdpMid, sdpMLineIndex, candidate) = (
-      rtcCandidate.sdpMid,
-      rtcCandidate.sdpMLineIndex,
-      rtcCandidate.candidate,
-    );
-    if (sdpMid == null ||
-        sdpMLineIndex == null ||
-        candidate == null ||
-        candidate.isEmpty) {
-      return null;
-    }
-
-    return ICECandidateDocument(
-      id: '',
-      sdpMid: sdpMid,
-      sdpMLineIndex: sdpMLineIndex,
-      candidate: candidate,
-    );
-  }
-
-  RTCIceCandidate _parseDocToRTCICE(ICECandidateDocument doc) {
-    return RTCIceCandidate(doc.candidate, doc.sdpMid, doc.sdpMLineIndex);
-  }
-
   @override
   Future<Either<Failure, void>> call(CreatePeerConnectionParams params) async {
     final connectionData = params.peerConnectionData;
@@ -54,7 +28,6 @@ class CreatePeerConnectionUsecase
     StreamSubscription? answerSub;
 
     try {
-      print('[DBG-RTC] OFFERER start session=$sessionCode');
       final sessionDescriptor = await connectionData.connection.createOffer();
       final (sdp, type) = (sessionDescriptor.sdp, sessionDescriptor.type);
       if (sdp == null || type == null) {
@@ -62,9 +35,10 @@ class CreatePeerConnectionUsecase
       }
 
       connectionData.connection.onIceCandidate = (iceCandidate) {
-        final candidate = _parseRTCICEToDoc(iceCandidate);
+        final candidate = ICECandidateDocument.fromRTCIceCandidate(
+          iceCandidate,
+        );
         if (candidate == null) return;
-        print('[DBG-RTC] OFFERER local candidate -> firestore');
 
         _sessionRepository.addOfferCandidate(
           code: sessionCode,
@@ -89,7 +63,6 @@ class CreatePeerConnectionUsecase
         return Left(a);
       }
 
-      print('[DBG-RTC] OFFERER offer written, waiting for answer');
       SessionDescription? sessionDescription;
       Failure? sessionFailure;
       await _sessionRepository
@@ -112,9 +85,6 @@ class CreatePeerConnectionUsecase
             ),
           );
 
-      print(
-        '[DBG-RTC] OFFERER answer wait done, answerSdpNull=${sessionDescription?.sdp == null} failure=$sessionFailure',
-      );
       if (sessionDescription?.sdp == null) {
         return Left(
           sessionFailure ??
@@ -129,11 +99,9 @@ class CreatePeerConnectionUsecase
         ),
       );
 
-      print('[DBG-RTC] OFFERER remote description set');
       final completer = Completer();
 
       connectionData.connection.onIceConnectionState = (state) {
-        print('[DBG-RTC] OFFERER iceConnectionState=$state');
         if (completer.isCompleted) return;
 
         switch (state) {
@@ -155,11 +123,10 @@ class CreatePeerConnectionUsecase
           case Left(:final a):
             log('Error: ${a.message}');
           case Right(b: final candidates):
-            print('[DBG-RTC] OFFERER answer candidates batch=${candidates.length}');
             for (final candidate in candidates) {
               try {
                 await connectionData.connection.addCandidate(
-                  _parseDocToRTCICE(candidate),
+                  candidate.toIceCandidate(),
                 );
               } catch (e) {
                 log('Error: ${e.toString()}');
@@ -168,24 +135,17 @@ class CreatePeerConnectionUsecase
         }
       });
 
-      print('[DBG-RTC] OFFERER waiting for connected (30s)');
       await completer.future.timeout(const Duration(seconds: 30));
-      print('[DBG-RTC] OFFERER CONNECTED');
       return Right(null);
-    } catch (e, st) {
-      print('[DBG-RTC] OFFERER CATCH $e\n$st');
+    } catch (e) {
       return Left(SessionFailure.catched(e.toString()));
     } finally {
-      print('[DBG-RTC] OFFERER finally start');
       // If connection is established, stop saving iceCandidates
       connectionData.connection.onIceCandidate = (_) {};
       connectionData.connection.onIceConnectionState = (_) {};
       await answerSub?.cancel();
-      print('[DBG-RTC] OFFERER finally: sub cancelled, clearing candidates');
       await _sessionRepository.clearAllCandidates(sessionId: sessionCode);
-      print('[DBG-RTC] OFFERER finally: candidates cleared, deleting session');
-      final foDelete = await _sessionRepository.delete(code: sessionCode);
-      print('[DBG-RTC] OFFERER finally done, deleteIsLeft=${foDelete.isLeft}');
+      await _sessionRepository.delete(code: sessionCode);
     }
   }
 }

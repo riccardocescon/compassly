@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:developer';
 
+import 'package:compassly/core/domain/entities/ice_candidate_document.dart';
 import 'package:compassly/core/domain/entities/session_description.dart';
 import 'package:compassly/core/domain/repositories/session_repository.dart';
 import 'package:compassly/core/failures/failure.dart';
@@ -15,14 +17,15 @@ class SessionAnswer extends Usecase<SessionAnswerParams, void> {
 
   @override
   Future<Either<Failure, void>> call(SessionAnswerParams params) async {
+    final peerConnection = params.peerConnection;
     final sessionCode = Generators.generateSessionId(
       roomCode: params.code,
       uidA: params.uid,
       uidB: params.memberUid,
     );
+    StreamSubscription? offerSub;
 
     try {
-      print('[DBG-RTC] ANSWERER start session=$sessionCode');
       SessionDescription? sessionDescriptor;
       Failure? failure;
       await _sessionRepository
@@ -44,39 +47,87 @@ class SessionAnswer extends Usecase<SessionAnswerParams, void> {
             ),
           );
 
-      print('[DBG-RTC] ANSWERER offer received, failure=$failure');
       if (failure != null) return Left(failure!);
       if (sessionDescriptor == null) {
         return Left(SessionFailure.timeout('SessionDescriptor not created'));
       }
 
-      await params.peerConnection.setRemoteDescription(
+      await peerConnection.setRemoteDescription(
         RTCSessionDescription(sessionDescriptor!.sdp, sessionDescriptor!.type),
       );
 
-      print('[DBG-RTC] ANSWERER remote description set');
-      final sessionDescription = await params.peerConnection.createAnswer();
+      final completer = Completer();
+
+      peerConnection.onIceConnectionState = (state) {
+        if (completer.isCompleted) return;
+
+        switch (state) {
+          case RTCIceConnectionState.RTCIceConnectionStateConnected:
+            completer.complete();
+          case RTCIceConnectionState.RTCIceConnectionStateFailed:
+            completer.completeError(SessionFailure.closed('Failed to connect'));
+          case RTCIceConnectionState.RTCIceConnectionStateClosed:
+            completer.completeError(SessionFailure.closed('Closed'));
+          case _:
+        }
+      };
+
+      final offerCandidatesStream = _sessionRepository.watchOfferCandidates(
+        code: sessionCode,
+      );
+      offerSub = offerCandidatesStream.listen((state) async {
+        switch (state) {
+          case Left(:final a):
+            log('Error: ${a.message}');
+          case Right(b: final candidates):
+            for (final candidate in candidates) {
+              try {
+                await peerConnection.addCandidate(candidate.toIceCandidate());
+              } catch (e) {
+                log('Error: ${e.toString()}');
+              }
+            }
+        }
+      });
+
+      final sessionDescription = await peerConnection.createAnswer();
 
       final (sdp, type) = (sessionDescription.sdp, sessionDescription.type);
       if (sdp == null || type == null) {
         return Left(DataFailure.preprocess('sdp or type is null'));
       }
 
-      print('[DBG-RTC] ANSWERER answer created');
-      await params.peerConnection.setLocalDescription(sessionDescription);
+      peerConnection.onIceCandidate = (iceCandidate) {
+        final candidate = ICECandidateDocument.fromRTCIceCandidate(
+          iceCandidate,
+        );
+
+        if (candidate == null) return;
+
+        _sessionRepository.addAnswerCandidate(
+          code: sessionCode,
+          candidate: candidate,
+        );
+      };
+
+      await peerConnection.setLocalDescription(sessionDescription);
 
       final foAnswer = await _sessionRepository.writeAnswer(
         code: sessionCode,
         answer: SessionDescription(sdp: sdp, type: type),
       );
-      print('[DBG-RTC] ANSWERER answer written, isLeft=${foAnswer.isLeft}');
       if (foAnswer case Left(:final a)) {
         return Left(a);
       }
 
+      await completer.future.timeout(const Duration(seconds: 30));
       return const Right(null);
-    } catch (e, st) {
-      print('[DBG-RTC] ANSWERER CATCH $e\n$st');
+    } catch (e) {
+      await offerSub?.cancel();
+      peerConnection.onIceCandidate = (_) {};
+      peerConnection.onIceConnectionState = (_) {};
+      await _sessionRepository.clearAllCandidates(sessionId: sessionCode);
+      await _sessionRepository.delete(code: sessionCode);
       return Left(SessionFailure.catched(e.toString()));
     }
   }
