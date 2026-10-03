@@ -38,7 +38,7 @@ Ordine deciso: alpha con solo STUN (connessione diretta), TURN come ultimo step 
 
 - [X] Creare `RTCPeerConnection` con `iceServers` contenente solo lo STUN pubblico (nessuna voce TURN per ora, ma struttura pronta per aggiungerla dopo)
 - [X] Creare `DataChannel` per invio posizione
-- [ ] Collegare generazione/raccolta ICE candidate locali alla scrittura su Firestore (Fase 1)
+- [X] Collegare generazione/raccolta ICE candidate locali alla scrittura su Firestore (Fase 1)
 - [X] Collegare candidati remoti ricevuti da Firestore a `addCandidate`
 - [X] Verificare `onIceConnectionState` → arriva a `connected` su rete locale/WiFi
 - [ ] Invio posizione GPS (lat/lon) via DataChannel, aggiornamento ogni secondo

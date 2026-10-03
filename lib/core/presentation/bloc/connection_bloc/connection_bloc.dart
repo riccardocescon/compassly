@@ -64,6 +64,15 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
               {'urls': 'stun:stun.l.google.com:19302'},
             ],
           });
+          final currentConnection = PeerConnectionData(
+            remoteMemberUid: member.uid,
+            connection: pc,
+            dataChannel: null,
+          );
+          pc.onDataChannel = (channel) {
+            currentConnection.dataChannel ??= channel;
+          };
+          _peerConnections.add(currentConnection);
           final foAnswer = await _sessionAnswer.call(
             SessionAnswerParams(
               code: event.roomCode,
@@ -72,6 +81,10 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
               peerConnection: pc,
             ),
           );
+          if (foAnswer.isLeft) {
+            log('Error: ${foAnswer.leftOption.getOrNull?.message}');
+            await _closeMemberConnection(member.uid);
+          }
           _setPeer(emit, member.uid, _toStatus(foAnswer));
           break;
 
@@ -94,19 +107,28 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
           );
 
           _peerConnections.add(peerConnection);
-          final foCreateConnection = await _createPeerConnectionUsecase.call(
+          var foCreateConnection = await _createPeerConnectionUsecase.call(
             CreatePeerConnectionParams(
               peerConnectionData: peerConnection,
               roomCode: event.roomCode,
               uid: _authBloc.user!.uid,
             ),
           );
+          if (foCreateConnection.isRight) {
+            try {
+              await _waitChannelOpen(dataChannel);
+            } catch (e) {
+              log('Error: ${e.toString()}');
+              foCreateConnection = Left(SessionFailure.catched(e.toString()));
+            }
+          }
+
           if (foCreateConnection.isLeft) {
             log('Error: ${foCreateConnection.leftOption.getOrNull?.message}');
             await _closeMemberConnection(member.uid);
           }
-          _setPeer(emit, member.uid, _toStatus(foCreateConnection));
 
+          _setPeer(emit, member.uid, _toStatus(foCreateConnection));
           break;
 
         case MemberLeft(:final member):
@@ -146,7 +168,17 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
 
     final connection = _peerConnections.removeAt(index);
 
-    await connection.dataChannel.close();
+    await connection.dataChannel?.close();
     await connection.connection.close();
+  }
+
+  Future<void> _waitChannelOpen(RTCDataChannel channel) async {
+    if (channel.state == RTCDataChannelState.RTCDataChannelOpen) {
+      return;
+    }
+
+    await channel.stateChangeStream
+        .timeout(const Duration(seconds: 30))
+        .firstWhere((state) => state == RTCDataChannelState.RTCDataChannelOpen);
   }
 }

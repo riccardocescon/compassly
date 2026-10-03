@@ -22,6 +22,10 @@ class LeaveRoomUsecase extends Usecase<LeaveRoomUsecaseParams, void> {
     if (foMembers case Left(:final a)) return Left(a);
     final members = foMembers.getOrElse(() => []);
 
+    if (members.length < 2) {
+      await _roomRepository.delete(code: params.code);
+    }
+
     final foLeave = await _roomRepository.leave(
       uid: params.uid,
       code: params.code,
@@ -45,10 +49,6 @@ class LeaveRoomUsecase extends Usecase<LeaveRoomUsecaseParams, void> {
           log(l.message);
         }, (r) {});
       });
-    }
-
-    if (members.length < 2) {
-      _roomRepository.delete(code: params.code);
     }
 
     return Right(null);

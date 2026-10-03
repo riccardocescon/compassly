@@ -3,9 +3,9 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 class PeerConnectionData {
   final String remoteMemberUid;
   final RTCPeerConnection connection;
-  final RTCDataChannel dataChannel;
+  RTCDataChannel? dataChannel;
 
-  const PeerConnectionData({
+  PeerConnectionData({
     required this.remoteMemberUid,
     required this.connection,
     required this.dataChannel,
