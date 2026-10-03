@@ -11,11 +11,10 @@ import 'package:compassly/core/utils/generators.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:ribs_core/ribs_core.dart';
 
-class CreatePeerConnectionUsecase
-    extends Usecase<CreatePeerConnectionParams, void> {
+class OfferSessionUsecase extends Usecase<CreatePeerConnectionParams, void> {
   final SessionRepository _sessionRepository;
 
-  const CreatePeerConnectionUsecase({required this._sessionRepository});
+  const OfferSessionUsecase({required this._sessionRepository});
 
   @override
   Future<Either<Failure, void>> call(CreatePeerConnectionParams params) async {

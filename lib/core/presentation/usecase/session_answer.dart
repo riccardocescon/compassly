@@ -10,10 +10,10 @@ import 'package:compassly/core/utils/generators.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:ribs_core/ribs_core.dart';
 
-class SessionAnswer extends Usecase<SessionAnswerParams, void> {
+class SessionAnswerUsecase extends Usecase<SessionAnswerParams, void> {
   final SessionRepository _sessionRepository;
 
-  const SessionAnswer({required this._sessionRepository});
+  const SessionAnswerUsecase({required this._sessionRepository});
 
   @override
   Future<Either<Failure, void>> call(SessionAnswerParams params) async {

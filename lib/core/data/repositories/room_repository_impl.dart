@@ -80,7 +80,7 @@ class RoomRepositoryImpl extends RoomRepository {
     required String uid,
     required Member member,
   }) async {
-    final foRoom = await _roomApi.search(code: code);
+    final foRoom = await _roomApi.fetchRoom(code: code);
     if (foRoom case Left(:final a)) return Left(a);
 
     final memberModel = MemberModel.fromEntity(member, uid: uid);

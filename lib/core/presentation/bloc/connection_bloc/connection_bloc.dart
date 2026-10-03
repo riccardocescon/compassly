@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:compassly/core/domain/entities/member.dart';
 import 'package:compassly/core/domain/entities/member_change.dart';
 import 'package:compassly/core/domain/entities/peer_connection_data.dart';
 import 'package:compassly/core/domain/entities/peer_status.dart';
@@ -8,7 +9,7 @@ import 'package:compassly/core/domain/repositories/session_repository.dart';
 import 'package:compassly/core/failures/failure.dart';
 import 'package:compassly/core/presentation/bloc/auth_bloc/auth_bloc.dart';
 import 'package:compassly/core/presentation/bloc/room_bloc/room_bloc.dart';
-import 'package:compassly/core/presentation/usecase/create_peer_connection.dart';
+import 'package:compassly/core/presentation/usecase/offer_session.dart';
 import 'package:compassly/core/presentation/usecase/session_answer.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -28,8 +29,8 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
   final RoomBloc _roomBloc;
   final AuthBloc _authBloc;
   final SessionRepository _sessionRepository;
-  final SessionAnswer _sessionAnswer;
-  final CreatePeerConnectionUsecase _createPeerConnectionUsecase;
+  final SessionAnswerUsecase _sessionAnswer;
+  final OfferSessionUsecase _offerSessionUsecase;
 
   StreamSubscription<RoomState>? _roomSub;
 
@@ -38,7 +39,7 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
     required this._authBloc,
     required this._sessionRepository,
     required this._sessionAnswer,
-    required this._createPeerConnectionUsecase,
+    required this._offerSessionUsecase,
   }) : super(const ConnectionState.init()) {
     _roomSub = _roomBloc.stream.listen((roomState) {
       roomState.maybeMap(
@@ -58,84 +59,118 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
     on<_MemberChanged>((event, emit) async {
       switch (event.change) {
         case MemberJoined(:final member):
-          _setPeer(emit, member.uid, const PeerStatus.connecting());
-          final pc = await createPeerConnection({
-            'iceServers': [
-              {'urls': 'stun:stun.l.google.com:19302'},
-            ],
-          });
-          final currentConnection = PeerConnectionData(
-            remoteMemberUid: member.uid,
-            connection: pc,
-            dataChannel: null,
+          _handleMemberJoined(
+            roomCode: event.roomCode,
+            member: member,
+            emit: emit,
           );
-          pc.onDataChannel = (channel) {
-            currentConnection.dataChannel ??= channel;
-          };
-          _peerConnections.add(currentConnection);
-          final foAnswer = await _sessionAnswer.call(
-            SessionAnswerParams(
-              code: event.roomCode,
-              memberUid: member.uid,
-              uid: _authBloc.user!.uid,
-              peerConnection: pc,
-            ),
-          );
-          if (foAnswer.isLeft) {
-            log('Error: ${foAnswer.leftOption.getOrNull?.message}');
-            await _closeMemberConnection(member.uid);
-          }
-          _setPeer(emit, member.uid, _toStatus(foAnswer));
           break;
 
         case MemberExisting(:final member):
-          _setPeer(emit, member.uid, const PeerStatus.connecting());
-          final pc = await createPeerConnection({
-            'iceServers': [
-              {'urls': 'stun:stun.l.google.com:19302'},
-            ],
-          });
-
-          final dataChannel = await pc.createDataChannel(
-            'compassly',
-            RTCDataChannelInit()..ordered = true,
+          _handleMemberExisting(
+            roomCode: event.roomCode,
+            member: member,
+            emit: emit,
           );
-          final peerConnection = PeerConnectionData(
-            remoteMemberUid: member.uid,
-            connection: pc,
-            dataChannel: dataChannel,
-          );
-
-          _peerConnections.add(peerConnection);
-          var foCreateConnection = await _createPeerConnectionUsecase.call(
-            CreatePeerConnectionParams(
-              peerConnectionData: peerConnection,
-              roomCode: event.roomCode,
-              uid: _authBloc.user!.uid,
-            ),
-          );
-          if (foCreateConnection.isRight) {
-            try {
-              await _waitChannelOpen(dataChannel);
-            } catch (e) {
-              log('Error: ${e.toString()}');
-              foCreateConnection = Left(SessionFailure.catched(e.toString()));
-            }
-          }
-
-          if (foCreateConnection.isLeft) {
-            log('Error: ${foCreateConnection.leftOption.getOrNull?.message}');
-            await _closeMemberConnection(member.uid);
-          }
-
-          _setPeer(emit, member.uid, _toStatus(foCreateConnection));
           break;
 
         case MemberLeft(:final member):
-          await _closeMemberConnection(member.uid);
-          _removePeer(emit, member.uid);
+          _handleMemberLeft(member: member, emit: emit);
           break;
       }
+    });
+  }
+
+  void _handleMemberJoined({
+    required String roomCode,
+    required Member member,
+    required Emitter<ConnectionState> emit,
+  }) async {
+    final pc = await _createPeerConnection(memberUid: member.uid, emit: emit);
+
+    final currentConnection = PeerConnectionData(
+      remoteMemberUid: member.uid,
+      connection: pc,
+      dataChannel: null,
+    );
+    pc.onDataChannel = (channel) {
+      currentConnection.dataChannel ??= channel;
+    };
+    _peerConnections.add(currentConnection);
+    final foAnswer = await _sessionAnswer.call(
+      SessionAnswerParams(
+        code: roomCode,
+        memberUid: member.uid,
+        uid: _authBloc.user!.uid,
+        peerConnection: pc,
+      ),
+    );
+    if (foAnswer.isLeft) {
+      log('Error: ${foAnswer.leftOption.getOrNull?.message}');
+      await _closeMemberConnection(member.uid);
+    }
+    _setPeer(emit, member.uid, _toStatus(foAnswer));
+  }
+
+  void _handleMemberExisting({
+    required String roomCode,
+    required Member member,
+    required Emitter<ConnectionState> emit,
+  }) async {
+    final pc = await _createPeerConnection(memberUid: member.uid, emit: emit);
+
+    final dataChannel = await pc.createDataChannel(
+      'compassly',
+      RTCDataChannelInit()..ordered = true,
+    );
+    final peerConnection = PeerConnectionData(
+      remoteMemberUid: member.uid,
+      connection: pc,
+      dataChannel: dataChannel,
+    );
+
+    _peerConnections.add(peerConnection);
+    var foCreateConnection = await _offerSessionUsecase.call(
+      CreatePeerConnectionParams(
+        peerConnectionData: peerConnection,
+        roomCode: roomCode,
+        uid: _authBloc.user!.uid,
+      ),
+    );
+    if (foCreateConnection.isRight) {
+      try {
+        await _waitChannelOpen(dataChannel);
+      } catch (e) {
+        log('Error: ${e.toString()}');
+        foCreateConnection = Left(SessionFailure.catched(e.toString()));
+      }
+    }
+
+    if (foCreateConnection.isLeft) {
+      log('Error: ${foCreateConnection.leftOption.getOrNull?.message}');
+      await _closeMemberConnection(member.uid);
+    }
+
+    _setPeer(emit, member.uid, _toStatus(foCreateConnection));
+  }
+
+  void _handleMemberLeft({
+    required Member member,
+    required Emitter<ConnectionState> emit,
+  }) async {
+    await _closeMemberConnection(member.uid);
+    _removePeer(emit, member.uid);
+  }
+
+  Future<RTCPeerConnection> _createPeerConnection({
+    required String memberUid,
+    required Emitter<ConnectionState> emit,
+  }) async {
+    _setPeer(emit, memberUid, const PeerStatus.connecting());
+    return await createPeerConnection({
+      'iceServers': [
+        {'urls': 'stun:stun.l.google.com:19302'},
+      ],
     });
   }
 

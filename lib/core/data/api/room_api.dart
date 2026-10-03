@@ -41,7 +41,7 @@ class RoomApi {
     }
   }
 
-  Future<Either<FirestoreFailure, RoomModel>> search({
+  Future<Either<FirestoreFailure, RoomModel>> fetchRoom({
     required String code,
   }) async {
     try {
