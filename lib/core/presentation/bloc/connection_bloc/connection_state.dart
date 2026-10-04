@@ -6,6 +6,6 @@ sealed class ConnectionState with _$ConnectionState {
 
   /// Stato della connessione P2P verso ciascun membro, indicizzato per uid.
   const factory ConnectionState.data({
-    required Map<String, PeerStatus> peers,
+    required List<ConnectionData> connections,
   }) = _Data;
 }

@@ -15,76 +15,30 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ConnectionEvent {
 
- String get roomCode; MemberChange get change;
-/// Create a copy of ConnectionEvent
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$ConnectionEventCopyWith<ConnectionEvent> get copyWith => _$ConnectionEventCopyWithImpl<ConnectionEvent>(this as ConnectionEvent, _$identity);
+
 
 
 
 @override
 bool operator ==(Object other) {
-  final _this = this as ConnectionEvent;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ConnectionEvent&&(identical(other.roomCode, _this.roomCode) || other.roomCode == _this.roomCode)&&(identical(other.change, _this.change) || other.change == _this.change));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is ConnectionEvent);
 }
 
 
 @override
-int get hashCode {
-  final _this = this as ConnectionEvent;
-  return Object.hash(runtimeType,_this.roomCode,_this.change);
-}
+int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  final _this = this as ConnectionEvent;
-  return 'ConnectionEvent(roomCode: ${_this.roomCode}, change: ${_this.change})';
+    return 'ConnectionEvent()';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $ConnectionEventCopyWith<$Res>  {
-  factory $ConnectionEventCopyWith(ConnectionEvent value, $Res Function(ConnectionEvent) _then) = _$ConnectionEventCopyWithImpl;
-@useResult
-$Res call({
- String roomCode, MemberChange change
-});
-
-
-$MemberChangeCopyWith<$Res> get change;
-
-}
-/// @nodoc
-class _$ConnectionEventCopyWithImpl<$Res>
-    implements $ConnectionEventCopyWith<$Res> {
-  _$ConnectionEventCopyWithImpl(this._self, this._then);
-
-  final ConnectionEvent _self;
-  final $Res Function(ConnectionEvent) _then;
-
-/// Create a copy of ConnectionEvent
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? roomCode = null,Object? change = null,}) {
-  return _then(ConnectionEvent.memberChanged(
-roomCode: null == roomCode ? _self.roomCode : roomCode // ignore: cast_nullable_to_non_nullable
-as String,change: null == change ? _self.change : change // ignore: cast_nullable_to_non_nullable
-as MemberChange,
-  ));
-}
-/// Create a copy of ConnectionEvent
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$MemberChangeCopyWith<$Res> get change {
-  
-  return $MemberChangeCopyWith<$Res>(_self.change, (value) {
-    return _then(_self.copyWith(change: value));
-  });
-}
+class $ConnectionEventCopyWith<$Res>  {
+$ConnectionEventCopyWith(ConnectionEvent _, $Res Function(ConnectionEvent) __);
 }
 
 
@@ -102,11 +56,12 @@ extension ConnectionEventPatterns on ConnectionEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _MemberChanged value)?  memberChanged,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _MemberChanged value)?  memberChanged,TResult Function( _LocationReceived value)?  locationReceived,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _MemberChanged() when memberChanged != null:
-return memberChanged(_that);case _:
+return memberChanged(_that);case _LocationReceived() when locationReceived != null:
+return locationReceived(_that);case _:
   return orElse();
 
 }
@@ -124,11 +79,12 @@ return memberChanged(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _MemberChanged value)  memberChanged,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _MemberChanged value)  memberChanged,required TResult Function( _LocationReceived value)  locationReceived,}){
 final _that = this;
 switch (_that) {
 case _MemberChanged():
-return memberChanged(_that);}
+return memberChanged(_that);case _LocationReceived():
+return locationReceived(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -142,11 +98,12 @@ return memberChanged(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _MemberChanged value)?  memberChanged,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _MemberChanged value)?  memberChanged,TResult? Function( _LocationReceived value)?  locationReceived,}){
 final _that = this;
 switch (_that) {
 case _MemberChanged() when memberChanged != null:
-return memberChanged(_that);case _:
+return memberChanged(_that);case _LocationReceived() when locationReceived != null:
+return locationReceived(_that);case _:
   return null;
 
 }
@@ -163,10 +120,11 @@ return memberChanged(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String roomCode,  MemberChange change)?  memberChanged,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String roomCode,  MemberChange change)?  memberChanged,TResult Function( String uid,  LocationData locationData)?  locationReceived,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MemberChanged() when memberChanged != null:
-return memberChanged(_that.roomCode,_that.change);case _:
+return memberChanged(_that.roomCode,_that.change);case _LocationReceived() when locationReceived != null:
+return locationReceived(_that.uid,_that.locationData);case _:
   return orElse();
 
 }
@@ -184,10 +142,11 @@ return memberChanged(_that.roomCode,_that.change);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String roomCode,  MemberChange change)  memberChanged,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String roomCode,  MemberChange change)  memberChanged,required TResult Function( String uid,  LocationData locationData)  locationReceived,}) {final _that = this;
 switch (_that) {
 case _MemberChanged():
-return memberChanged(_that.roomCode,_that.change);}
+return memberChanged(_that.roomCode,_that.change);case _LocationReceived():
+return locationReceived(_that.uid,_that.locationData);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -201,10 +160,11 @@ return memberChanged(_that.roomCode,_that.change);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String roomCode,  MemberChange change)?  memberChanged,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String roomCode,  MemberChange change)?  memberChanged,TResult? Function( String uid,  LocationData locationData)?  locationReceived,}) {final _that = this;
 switch (_that) {
 case _MemberChanged() when memberChanged != null:
-return memberChanged(_that.roomCode,_that.change);case _:
+return memberChanged(_that.roomCode,_that.change);case _LocationReceived() when locationReceived != null:
+return locationReceived(_that.uid,_that.locationData);case _:
   return null;
 
 }
@@ -219,12 +179,12 @@ class _MemberChanged implements ConnectionEvent {
   const _MemberChanged({required this.roomCode, required this.change});
   
 
-@override final  String roomCode;
-@override final  MemberChange change;
+ final  String roomCode;
+ final  MemberChange change;
 
 /// Create a copy of ConnectionEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
+@JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 _$MemberChangedCopyWith<_MemberChanged> get copyWith => __$MemberChangedCopyWithImpl<_MemberChanged>(this, _$identity);
 
@@ -252,13 +212,13 @@ String toString() {
 /// @nodoc
 abstract mixin class _$MemberChangedCopyWith<$Res> implements $ConnectionEventCopyWith<$Res> {
   factory _$MemberChangedCopyWith(_MemberChanged value, $Res Function(_MemberChanged) _then) = __$MemberChangedCopyWithImpl;
-@override @useResult
+@useResult
 $Res call({
  String roomCode, MemberChange change
 });
 
 
-@override $MemberChangeCopyWith<$Res> get change;
+$MemberChangeCopyWith<$Res> get change;
 
 }
 /// @nodoc
@@ -271,7 +231,7 @@ class __$MemberChangedCopyWithImpl<$Res>
 
 /// Create a copy of ConnectionEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? roomCode = null,Object? change = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? roomCode = null,Object? change = null,}) {
   return _then(_MemberChanged(
 roomCode: null == roomCode ? _self.roomCode : roomCode // ignore: cast_nullable_to_non_nullable
 as String,change: null == change ? _self.change : change // ignore: cast_nullable_to_non_nullable
@@ -289,6 +249,76 @@ $MemberChangeCopyWith<$Res> get change {
     return _then(_self.copyWith(change: value));
   });
 }
+}
+
+/// @nodoc
+
+
+class _LocationReceived implements ConnectionEvent {
+  const _LocationReceived({required this.uid, required this.locationData});
+  
+
+ final  String uid;
+ final  LocationData locationData;
+
+/// Create a copy of ConnectionEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$LocationReceivedCopyWith<_LocationReceived> get copyWith => __$LocationReceivedCopyWithImpl<_LocationReceived>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LocationReceived&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.locationData, locationData) || other.locationData == locationData));
+}
+
+
+@override
+int get hashCode {
+    return Object.hash(runtimeType,uid,locationData);
+}
+
+@override
+String toString() {
+    return 'ConnectionEvent.locationReceived(uid: $uid, locationData: $locationData)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$LocationReceivedCopyWith<$Res> implements $ConnectionEventCopyWith<$Res> {
+  factory _$LocationReceivedCopyWith(_LocationReceived value, $Res Function(_LocationReceived) _then) = __$LocationReceivedCopyWithImpl;
+@useResult
+$Res call({
+ String uid, LocationData locationData
+});
+
+
+
+
+}
+/// @nodoc
+class __$LocationReceivedCopyWithImpl<$Res>
+    implements _$LocationReceivedCopyWith<$Res> {
+  __$LocationReceivedCopyWithImpl(this._self, this._then);
+
+  final _LocationReceived _self;
+  final $Res Function(_LocationReceived) _then;
+
+/// Create a copy of ConnectionEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? locationData = null,}) {
+  return _then(_LocationReceived(
+uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
+as String,locationData: null == locationData ? _self.locationData : locationData // ignore: cast_nullable_to_non_nullable
+as LocationData,
+  ));
+}
+
+
 }
 
 /// @nodoc
@@ -399,11 +429,11 @@ return data(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  init,TResult Function( Map<String, PeerStatus> peers)?  data,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  init,TResult Function( List<ConnectionData> connections)?  data,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Init() when init != null:
 return init();case _Data() when data != null:
-return data(_that.peers);case _:
+return data(_that.connections);case _:
   return orElse();
 
 }
@@ -421,11 +451,11 @@ return data(_that.peers);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  init,required TResult Function( Map<String, PeerStatus> peers)  data,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  init,required TResult Function( List<ConnectionData> connections)  data,}) {final _that = this;
 switch (_that) {
 case _Init():
 return init();case _Data():
-return data(_that.peers);}
+return data(_that.connections);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -439,11 +469,11 @@ return data(_that.peers);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  init,TResult? Function( Map<String, PeerStatus> peers)?  data,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  init,TResult? Function( List<ConnectionData> connections)?  data,}) {final _that = this;
 switch (_that) {
 case _Init() when init != null:
 return init();case _Data() when data != null:
-return data(_that.peers);case _:
+return data(_that.connections);case _:
   return null;
 
 }
@@ -487,14 +517,14 @@ String toString() {
 
 
 class _Data implements ConnectionState {
-  const _Data({required  Map<String, PeerStatus> peers}): _peers = peers;
+  const _Data({required  List<ConnectionData> connections}): _connections = connections;
   
 
- final  Map<String, PeerStatus> _peers;
- Map<String, PeerStatus> get peers {
-  if (_peers is EqualUnmodifiableMapView) return _peers;
+ final  List<ConnectionData> _connections;
+ List<ConnectionData> get connections {
+  if (_connections is EqualUnmodifiableListView) return _connections;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableMapView(_peers);
+  return EqualUnmodifiableListView(_connections);
 }
 
 
@@ -508,18 +538,18 @@ _$DataCopyWith<_Data> get copyWith => __$DataCopyWithImpl<_Data>(this, _$identit
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Data&&const DeepCollectionEquality().equals(other.peers, _peers));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Data&&const DeepCollectionEquality().equals(other.connections, _connections));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_peers));
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_connections));
 }
 
 @override
 String toString() {
-    return 'ConnectionState.data(peers: $peers)';
+    return 'ConnectionState.data(connections: $connections)';
 }
 
 
@@ -530,7 +560,7 @@ abstract mixin class _$DataCopyWith<$Res> implements $ConnectionStateCopyWith<$R
   factory _$DataCopyWith(_Data value, $Res Function(_Data) _then) = __$DataCopyWithImpl;
 @useResult
 $Res call({
- Map<String, PeerStatus> peers
+ List<ConnectionData> connections
 });
 
 
@@ -547,10 +577,10 @@ class __$DataCopyWithImpl<$Res>
 
 /// Create a copy of ConnectionState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? peers = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? connections = null,}) {
   return _then(_Data(
-peers: null == peers ? _self._peers : peers // ignore: cast_nullable_to_non_nullable
-as Map<String, PeerStatus>,
+connections: null == connections ? _self._connections : connections // ignore: cast_nullable_to_non_nullable
+as List<ConnectionData>,
   ));
 }
 

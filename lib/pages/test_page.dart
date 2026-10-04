@@ -1,3 +1,4 @@
+import 'package:compassly/core/domain/entities/connection_data.dart';
 import 'package:compassly/core/domain/entities/peer_status.dart';
 import 'package:compassly/core/domain/entities/room.dart';
 import 'package:compassly/core/presentation/bloc/connection_bloc/connection_bloc.dart';
@@ -107,8 +108,8 @@ class _TestPageState extends State<TestPage> {
           builder: (context, state) => state.maybeMap(
             data: (s) => Column(
               children: [
-                for (final entry in s.peers.entries)
-                  Text('${entry.key}: ${_statusLabel(entry.value)}'),
+                for (final connection in s.connections)
+                  Text('${connection.member.uid}: ${_statusLabel(connection)}'),
               ],
             ),
             orElse: () => const SizedBox.shrink(),
@@ -118,9 +119,12 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
-  String _statusLabel(PeerStatus status) => switch (status) {
+  String _statusLabel(
+    ConnectionData connectionData,
+  ) => switch (connectionData.status) {
     PeerConnecting() => 'Connecting...',
-    PeerConnected() => 'Connected',
+    PeerConnected() =>
+      'Connected: (${connectionData.locationData?.lat};${connectionData.locationData?.long})',
     PeerFailed(:final failure) => 'Error: ${failure.message}',
   };
 }

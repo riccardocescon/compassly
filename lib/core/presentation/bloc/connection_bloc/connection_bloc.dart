@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:compassly/core/domain/entities/connection_data.dart';
+import 'package:compassly/core/domain/entities/location_data.dart';
 import 'package:compassly/core/domain/entities/member.dart';
 import 'package:compassly/core/domain/entities/member_change.dart';
 import 'package:compassly/core/domain/entities/peer_connection_data.dart';
@@ -8,6 +10,7 @@ import 'package:compassly/core/domain/entities/peer_status.dart';
 import 'package:compassly/core/domain/repositories/session_repository.dart';
 import 'package:compassly/core/failures/failure.dart';
 import 'package:compassly/core/presentation/bloc/auth_bloc/auth_bloc.dart';
+import 'package:compassly/core/presentation/bloc/location_bloc/location_bloc.dart';
 import 'package:compassly/core/presentation/bloc/room_bloc/room_bloc.dart';
 import 'package:compassly/core/presentation/usecase/offer_session.dart';
 import 'package:compassly/core/presentation/usecase/session_answer.dart';
@@ -25,18 +28,26 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
 
   /// Cache dello stato per membro: è la fonte di verità, gli stati emessi
   /// ne sono solo una proiezione. Sopravvive a qualsiasi altro stato emesso.
-  final _peerStatuses = <String, PeerStatus>{};
+  final _peerStatuses = <String, ConnectionData>{};
+
   final RoomBloc _roomBloc;
   final AuthBloc _authBloc;
+  final LocationBloc _locationBloc;
   final SessionRepository _sessionRepository;
   final SessionAnswerUsecase _sessionAnswer;
   final OfferSessionUsecase _offerSessionUsecase;
 
   StreamSubscription<RoomState>? _roomSub;
 
+  int get _connectedCount => _peerStatuses.values
+      .map((e) => e.status)
+      .whereType<PeerConnected>()
+      .length;
+
   ConnectionBloc({
     required this._roomBloc,
     required this._authBloc,
+    required this._locationBloc,
     required this._sessionRepository,
     required this._sessionAnswer,
     required this._offerSessionUsecase,
@@ -56,6 +67,27 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
         orElse: () {},
       );
     });
+
+    _locationBloc.stream.listen((locationState) {
+      locationState.maybeMap(
+        data: (value) {
+          final destinationPeers = _peerConnections
+              .where(
+                (e) =>
+                    e.dataChannel?.state ==
+                    RTCDataChannelState.RTCDataChannelOpen,
+              )
+              .toList();
+
+          final data = RTCDataChannelMessage(value.data);
+          for (final peerConnectionData in destinationPeers) {
+            peerConnectionData.dataChannel?.send(data);
+          }
+        },
+        orElse: () {},
+      );
+    });
+
     on<_MemberChanged>((event, emit) async {
       switch (event.change) {
         case MemberJoined(:final member):
@@ -79,6 +111,16 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
           break;
       }
     });
+
+    on<_LocationReceived>((event, emit) {
+      final oldStatus = _peerStatuses[event.uid];
+      if (oldStatus == null) return;
+
+      _peerStatuses[event.uid] = oldStatus.copyWith(
+        locationData: event.locationData,
+      );
+      emit(ConnectionState.data(connections: _peerStatuses.values.toList()));
+    });
   }
 
   void _handleMemberJoined({
@@ -86,7 +128,7 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
     required Member member,
     required Emitter<ConnectionState> emit,
   }) async {
-    final pc = await _createPeerConnection(memberUid: member.uid, emit: emit);
+    final pc = await _createPeerConnection(member: member, emit: emit);
 
     final currentConnection = PeerConnectionData(
       remoteMemberUid: member.uid,
@@ -95,7 +137,9 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
     );
     pc.onDataChannel = (channel) {
       currentConnection.dataChannel ??= channel;
+      _listenChannel(member.uid, channel);
     };
+
     _peerConnections.add(currentConnection);
     final foAnswer = await _sessionAnswer.call(
       SessionAnswerParams(
@@ -109,7 +153,7 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
       log('Error: ${foAnswer.leftOption.getOrNull?.message}');
       await _closeMemberConnection(member.uid);
     }
-    _setPeer(emit, member.uid, _toStatus(foAnswer));
+    _setPeer(emit, member, _toStatus(foAnswer));
   }
 
   void _handleMemberExisting({
@@ -117,12 +161,13 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
     required Member member,
     required Emitter<ConnectionState> emit,
   }) async {
-    final pc = await _createPeerConnection(memberUid: member.uid, emit: emit);
+    final pc = await _createPeerConnection(member: member, emit: emit);
 
     final dataChannel = await pc.createDataChannel(
       'compassly',
       RTCDataChannelInit()..ordered = true,
     );
+    _listenChannel(member.uid, dataChannel);
     final peerConnection = PeerConnectionData(
       remoteMemberUid: member.uid,
       connection: pc,
@@ -151,7 +196,7 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
       await _closeMemberConnection(member.uid);
     }
 
-    _setPeer(emit, member.uid, _toStatus(foCreateConnection));
+    _setPeer(emit, member, _toStatus(foCreateConnection));
   }
 
   void _handleMemberLeft({
@@ -163,10 +208,10 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
   }
 
   Future<RTCPeerConnection> _createPeerConnection({
-    required String memberUid,
+    required Member member,
     required Emitter<ConnectionState> emit,
   }) async {
-    _setPeer(emit, memberUid, const PeerStatus.connecting());
+    _setPeer(emit, member, const PeerStatus.connecting());
     return await createPeerConnection({
       'iceServers': [
         {'urls': 'stun:stun.l.google.com:19302'},
@@ -179,20 +224,45 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
     (_) => const PeerStatus.connected(),
   );
 
-  void _setPeer(Emitter<ConnectionState> emit, String uid, PeerStatus status) {
-    _peerStatuses[uid] = status;
+  void _setPeer(
+    Emitter<ConnectionState> emit,
+    Member member,
+    PeerStatus status,
+  ) {
+    final initPeerLength = _connectedCount;
+    final oldStatus = _peerStatuses[member.uid];
+    _peerStatuses[member.uid] =
+        oldStatus?.copyWith(status: status) ??
+        ConnectionData(member: member, status: status, locationData: null);
+    _startLocationBloc(initPeerLength);
+
     _emitPeers(emit);
   }
 
   void _removePeer(Emitter<ConnectionState> emit, String uid) {
+    final initPeerLength = _connectedCount;
     _peerStatuses.remove(uid);
+    _closeLocationBloc(initPeerLength);
     _emitPeers(emit);
   }
 
   /// Si emette una copia: freezed incapsula la mappa in una view, non la
   /// duplica, e mutare la cache cambierebbe anche lo stato già emesso.
   void _emitPeers(Emitter<ConnectionState> emit) {
-    emit(ConnectionState.data(peers: Map.of(_peerStatuses)));
+    emit(ConnectionState.data(connections: _peerStatuses.values.toList()));
+  }
+
+  void _startLocationBloc(int initPeerLength) {
+    final startLcoationService = initPeerLength == 0 && _connectedCount > 0;
+    if (startLcoationService) {
+      _locationBloc.add(LocationEvent.start());
+    }
+  }
+
+  void _closeLocationBloc(int initPeerLength) {
+    if (initPeerLength > 0 && _connectedCount == 0) {
+      _locationBloc.add(LocationEvent.stop());
+    }
   }
 
   Future<void> _closeMemberConnection(String memberUid) async {
@@ -215,5 +285,30 @@ class ConnectionBloc extends Bloc<ConnectionEvent, ConnectionState> {
     await channel.stateChangeStream
         .timeout(const Duration(seconds: 30))
         .firstWhere((state) => state == RTCDataChannelState.RTCDataChannelOpen);
+  }
+
+  void _listenChannel(String uid, RTCDataChannel channel) async {
+    try {
+      channel.onMessage = (message) {
+        final text = message.text;
+        try {
+          final data = LocationData.fromJson(message.text);
+          add(ConnectionEvent.locationReceived(uid: uid, locationData: data));
+        } catch (e) {
+          log('Error: ${e.toString()}. Text: $text');
+        }
+      };
+
+      await _waitChannelOpen(channel);
+      final lastLocationData = _locationBloc.state.maybeMap(
+        data: (value) => value.data,
+        orElse: () => null,
+      );
+      if (lastLocationData != null) {
+        await channel.send(RTCDataChannelMessage(lastLocationData));
+      }
+    } catch (e) {
+      log('Error: ${e.toString()}');
+    }
   }
 }
